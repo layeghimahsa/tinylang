@@ -7,6 +7,7 @@
 	
 	extern int yylineno;
 	int number_of_args = 1;
+	int counter = 0;
 
 	//------------------------------------------------------------------------------
 	
@@ -70,13 +71,13 @@
 	
 	// prototypes
 	struct dst_node* new_dstnode_variabledeclaration(char *n);
-	struct dst_node* new_dstnode_variableassignment(char *n);
+	struct dst_node* new_dstnode_variableassignment(char *n, int val);
 	struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr);
 	struct dst_node* new_program_dstnode();
 	int check_semantics(struct dst_node *dst);
 	void print_dst(struct dst_node *dst);
 	struct IR_node *generate_IR(struct dst_node *dst);
-	void add_to_symtable(struct symbol_node *head, struct dst_node *dst_ptr, char *n);
+	void add_to_symtable(struct symbol_node *head, char *n, int val);
 	int get(struct symbol_node *head, char *n);
 	
 	
@@ -85,8 +86,9 @@
 %}
 
 //Token Values
-%type <identifier_name> variable_declaration
+%type <dst_ptr> variable_declaration
 %type <dst_ptr> variable_assignment
+%type <dst_ptr> function_list
 %type <dst_ptr> function_header
 %type <dst_ptr> function
 %type <dst_ptr> if_statement
@@ -94,7 +96,7 @@
 %type <dst_ptr> program
 %type <dst_ptr> statement_list
 %type <dst_ptr> statement
-%type <dst_ptr> expr
+%type <value> expr
 
 %union{
 	char *identifier_name;
@@ -122,15 +124,15 @@
 
 %%
 
-program: function
+program: function_list
 	{
 		dst = new_program_dstnode();
 		dst->down = $1;
-	} | ;
+	};
 	
 
-//function_list:	function function_list {$1->side = $2; $$ = $1; }
-//	      | ;
+function_list:	function function_list {$1->side = $2; $$ = $1; }
+		| function {$$ = $1;};
 	     
 function: function_header LPAR statement_list RPAR
 {
@@ -146,15 +148,13 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 	$$->type = FUNCTION_HEADER;
 	$$->down = NULL;
 	$$->side = NULL;
-	number_of_args = 1;
 	 	
 };
 
-function_args: function_arg
-	     | function_arg COMMA function_args	{ number_of_args += 1; printf("number of args: %d",number_of_args);}
+function_args: ARG IDENTIFIER COMMA function_args
+	     | ARG IDENTIFIER                           
 	     ;
-	     
-function_arg: ARG IDENTIFIER;	     
+	          
 
 variable_declaration: INT IDENTIFIER SC
 {
@@ -164,14 +164,13 @@ variable_declaration: INT IDENTIFIER SC
 
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
-	$$ = new_dstnode_variableassignment($1);
-	$$->down = $3;
-	add_to_symtable(symtable, $3, $1);
+	$$ = new_dstnode_variableassignment($1, $3);
+	//add_to_symtable(symtable, $1, $3);
 	 	
 };
 
-expr: NUMBER { $$ = $1; $$->value = $1; $$->type = VARIABLE_ASSIGNMENT;}  
-    | IDENTIFIER { $$ = $1; $$->value = get(symtable, $1); $$->type = VARIABLE_ASSIGNMENT; }
+expr: NUMBER  
+    | IDENTIFIER { $$ = get(symtable, $1); }
     | expr '+' expr { $$ = $1 + $3; }
     | expr '-' expr { $$ = $1 - $3; }
     | expr '*' expr { $$ = $1 * $3; }
@@ -215,14 +214,11 @@ else_statement: ELSE LPAR statement_list RPAR
 statement: variable_declaration {$$ = $1;}
 	 | variable_assignment {$$ = $1;} 
 	 | if_statement {$$ = $1;}
-	 | else_statement {$$ = $1;} ;
+	 | else_statement {$$ = $1;};
 	 
 
-statement_list: statement statement_list
-{
-	$1->side = $2;
-	$$ = $1;
-};
+statement_list: statement statement_list { $1->side = $2; $$ = $1; }
+		| ;
 
 
 %%
@@ -239,11 +235,11 @@ struct dst_node* new_dstnode_variabledeclaration(char *n)
 	return node;
 }
 
-struct dst_node* new_dstnode_variableassignment(char *n)
+struct dst_node* new_dstnode_variableassignment(char *n, int val)
 {	
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = VARIABLE_ASSIGNMENT; 
-	node->value = 0;
+	node->value = val;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
 	node->down = NULL;
@@ -297,7 +293,7 @@ struct dst_node* new_program_dstnode()
 
 
 
-void add_to_symtable(struct symbol_node *head, struct dst_node *dst_ptr, char *n){
+void add_to_symtable(struct symbol_node *head, char *n, int val){
 
 	struct symbol_node *current;
 	current = head;
@@ -307,13 +303,9 @@ void add_to_symtable(struct symbol_node *head, struct dst_node *dst_ptr, char *n
 	}
 	
 	current->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
-	current->next->value = dst_ptr->value;
+	current->next->value = val;
 	current->next->name = (char *) malloc(strlen(n)+1);
 	strcpy(current->next->name,n);
-	if(dst_ptr->type == VARIABLE_ASSIGNMENT){
-		current->next->TYPE = VARIABLE;
-		current->next->arg_number = 0;
-	}
 	current->next->next = NULL;
 	return;
 
@@ -340,24 +332,47 @@ int check_semantics(struct dst_node *dst){
 }
 
 void print_dst(struct dst_node *dst){
-	int i = 0;
+
 	struct dst_node *temp;
 	temp = dst;
-	while(temp != NULL){
-		printf("level %d\n",i);
-		printf("name: %s\n",dst->name);
-		printf("value: %d\n",dst->value);
-		printf("type: %d\n",dst->type);
-		/*if (dst->side != NULL){
-			printf("level 0.%d\n",i);
-			printf("name: %s\n",dst->name);
-			printf("value: %d\n",dst->value);
-			printf("type: %d\n",dst->type);
-		}*/
+	while(temp->down != NULL){
+		if(temp->type == PROGRAM){
+			printf("name: %s\n", temp->name);
+			printf("|\n");
+			printf("∨\n");
+		} else if(temp->type == FUNCTION){
+			printf("name: %s", temp->name);
+			printf(", type: %d", temp->type);
+			printf(", value: %d", temp->value);
+			
+			while(temp->side != NULL){
+				printf("\n->\n");
+				printf("name: %s", temp->name);
+				printf(", type: %d", temp->type);
+				printf(", value: %d", temp->value);
+				temp = temp->side;
+			}
+			
+		} else{
+			printf("name: %s", temp->name);
+			printf(", type: %d", temp->type);
+			printf(", value: %d", temp->value);
+			
+			while(temp->side != NULL){
+				printf("\n->\n");
+				printf("name: %s", temp->name);
+				printf(", type: %d", temp->type);
+				printf(", value: %d", temp->value);
+				temp = temp->side;
+			}
+		
+		}
+		printf("\n----------------\n");
 		temp = temp->down;
-		i++;
 	}
+
 }
+
 
 /*struct IR_node *generate_IR(struct dst_node *dst){
 	
@@ -391,6 +406,6 @@ void print_dst(struct dst_node *dst){
 
 }*/
 
-void yyerror(char *s){ fprintf(stderr, "line %d: %s\n", yylineno, s); }
+void yyerror(char *s){ fprintf(stderr, " %s\n", s); }
 
 

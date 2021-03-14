@@ -1,1 +1,4 @@
-func foo ()()
+func foo (arg x)
+(
+	int x;	
+)

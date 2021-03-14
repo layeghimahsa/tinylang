@@ -15,6 +15,8 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 	
+
+	
 	yyparse();
 	//print_dst(dst);
 
