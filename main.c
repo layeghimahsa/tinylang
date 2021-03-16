@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "parser.tab.h"
+#include "parser.h"
+
 extern FILE *yyin;
 extern struct dst_node *dst;
 int main(int argc, char *argv[]){
@@ -18,6 +20,6 @@ int main(int argc, char *argv[]){
 
 	
 	yyparse();
-	//print_dst(dst);
+	print_dst(dst);
 
 }

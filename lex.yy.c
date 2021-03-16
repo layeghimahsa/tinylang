@@ -758,17 +758,17 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 10 "scanner.l"
-{return LPAR; printf("LPAR");}
+{printf(" LPAR"); return LPAR;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 11 "scanner.l"
-{return RPAR; printf("RPAR");}
+{printf(" RPAR"); return RPAR;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 12 "scanner.l"
-{return COMMA;}
+{printf(" COMMA");return COMMA;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
@@ -843,7 +843,7 @@ YY_RULE_SETUP
 case 18:
 YY_RULE_SETUP
 #line 27 "scanner.l"
-{return FUNC; printf("FUNC");}
+{printf(" FUNC"); return FUNC;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
@@ -853,7 +853,7 @@ YY_RULE_SETUP
 case 20:
 YY_RULE_SETUP
 #line 29 "scanner.l"
-{return ARG; printf("ARG");}
+{ printf(" ARG"); return ARG;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
@@ -868,7 +868,7 @@ YY_RULE_SETUP
 case 23:
 YY_RULE_SETUP
 #line 32 "scanner.l"
-{yylval.identifier_name = strdup(yytext); printf("IDENTIFIER"); return IDENTIFIER;}
+{yylval.identifier_name = strdup(yytext); printf(" IDENTIFIER"); return IDENTIFIER;}
 	YY_BREAK
 case 24:
 /* rule 24 can match eol */

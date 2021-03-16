@@ -4,6 +4,7 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <string.h>
+	#include "parser.h"
 	
 	extern int yylineno;
 	int number_of_args = 1;
@@ -11,36 +12,7 @@
 
 	//------------------------------------------------------------------------------
 	
-	//DST
-	enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, ELSE_STATEMENT};
 	
-	struct dst_node
-	{
-		enum node_type type;
-		char *name;
-		int value;
-		struct dst_node *down;
-		struct dst_node *side;	
-	};
-		
-	struct dst_node *dst;
-	
-	//------------------------------------------------------------------------------
-		
-	//symbol table
-	enum symbol_type {FUCNTION, VARIABLE};
-	struct symbol_node
-	{
-		char *name; //function name or variable name
-		enum symbol_type TYPE;
-		int value; //for identifier
-		int arg_number; //for function
-		char *scope;
-		struct symbol_node *next;
-	
-	};
-	
-	struct symbol_node *symtable;
 	
 	//------------------------------------------------------------------------------
 	
@@ -68,19 +40,7 @@
 	};*/
 	
 	//------------------------------------------------------------------------------
-	
-	// prototypes
-	struct dst_node* new_dstnode_variabledeclaration(char *n);
-	struct dst_node* new_dstnode_variableassignment(char *n, int val);
-	struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr);
-	struct dst_node* new_program_dstnode();
-	int check_semantics(struct dst_node *dst);
-	void print_dst(struct dst_node *dst);
-	struct IR_node *generate_IR(struct dst_node *dst);
-	void add_to_symtable(struct symbol_node *head, char *n, int val);
-	int get(struct symbol_node *head, char *n);
-	
-	
+		
 
 
 %}
@@ -142,17 +102,20 @@ function: function_header LPAR statement_list RPAR
 
 function_header: FUNC IDENTIFIER LPAR function_args RPAR
 {
+		struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+		node->name = $2;
+		node->value = number_of_args;
+		node->type = FUNCTION_HEADER;
+		node->down = NULL;
+		node->side = NULL;
+		number_of_args = 1;
+		counter = 0;
+		$$ = node;
 
-	$$->name = $2;
-	$$->value = number_of_args;
-	$$->type = FUNCTION_HEADER;
-	$$->down = NULL;
-	$$->side = NULL;
-	 	
 };
 
-function_args: ARG IDENTIFIER COMMA function_args
-	     | ARG IDENTIFIER                           
+function_args: ARG IDENTIFIER COMMA function_args { number_of_args = number_of_args + counter;}
+	     | ARG IDENTIFIER  { counter = 1; }         
 	     ;
 	          
 
@@ -217,8 +180,8 @@ statement: variable_declaration {$$ = $1;}
 	 | else_statement {$$ = $1;};
 	 
 
-statement_list: statement statement_list { $1->side = $2; $$ = $1; }
-		| ;
+statement_list: statement statement_list { $1->side = $2; $$ = $1;  {printf("\n statement listttttttt \n");} }
+		| { $$ = NULL;};
 
 
 %%
@@ -256,6 +219,8 @@ struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 	node->value = dst_ptr->value;
 	node->down = NULL;
 	node->side = NULL;
+	//printf("\n name: %s\n",node->name);
+	//printf("value: %d\n",node->value);
 	return node;
 
 }
@@ -334,44 +299,90 @@ int check_semantics(struct dst_node *dst){
 void print_dst(struct dst_node *dst){
 
 	struct dst_node *temp;
+	struct dst_node *func_temp;
+	struct dst_node *statement_temp;
 	temp = dst;
-	while(temp->down != NULL){
+	while(temp != NULL ){
 		if(temp->type == PROGRAM){
 			printf("name: %s\n", temp->name);
 			printf("|\n");
 			printf("∨\n");
 		} else if(temp->type == FUNCTION){
 			printf("name: %s", temp->name);
-			printf(", type: %d", temp->type);
-			printf(", value: %d", temp->value);
+			printf(", type: %s", getType(temp->type));
+			printf(", value or arg: %d", temp->value);
 			
+			func_temp = temp;
 			while(temp->side != NULL){
 				printf("\n->\n");
-				printf("name: %s", temp->name);
-				printf(", type: %d", temp->type);
-				printf(", value: %d", temp->value);
+				printf("name: %s", temp->side->name);
+				printf(", type: %s", getType(temp->side->type));
+				printf(", value or arg: %d", temp->side->value);
 				temp = temp->side;
 			}
+			temp = func_temp;
 			
-		} else{
+			
+		} else {
+			printf("\n tuye else miad????????????????????? \n");
 			printf("name: %s", temp->name);
-			printf(", type: %d", temp->type);
-			printf(", value: %d", temp->value);
+			printf(", type: %s", getType(temp->type));
+			printf(", value or arg: %d", temp->value);
 			
+			statement_temp = temp;
 			while(temp->side != NULL){
 				printf("\n->\n");
-				printf("name: %s", temp->name);
-				printf(", type: %d", temp->type);
-				printf(", value: %d", temp->value);
+				printf("name: %s", temp->side->name);
+				printf(", type: %s", getType(temp->side->type));
+				printf(", value or arg: %d", temp->side->value);
 				temp = temp->side;
 			}
+			temp = statement_temp;
 		
-		}
-		printf("\n----------------\n");
+		} 
+		
 		temp = temp->down;
+		printf("\n----------------\n");
+
 	}
 
 }
+
+char* getType(int i){
+
+	char * name;
+	switch(i){
+	
+	case 0: 
+		name = "PROGRAM";
+		break;
+	case 1: 
+		name = "FUNCTION_HEADER";
+		break;
+	case 2: 
+		name = "FUNCTION";
+		break;
+	case 3: 
+		name = "VARIABLE_DECLARATION";
+		break;
+	case 4: 
+		name = "VARIABLE_ASSIGNMENT";
+		break;
+	case 5: 
+		name = "IF_STATEMENT";
+		break;
+	case 6: 
+		name = "ELSE_STATEMENT";
+		break;						
+	default: 
+		break;	
+		
+	}
+	
+	return name;
+}		
+
+
 
 
 /*struct IR_node *generate_IR(struct dst_node *dst){

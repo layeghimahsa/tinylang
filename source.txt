@@ -1,4 +1,15 @@
-func foo (arg x)
+func foo (arg x, arg y, arg z)
 (
 	int x;	
+	int y;
+)
+
+func mah (arg n, arg b)
+(
+	int p;	
+)
+
+func hel (arg s)
+(
+	int z;	
 )
