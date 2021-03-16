@@ -1,7 +1,6 @@
-func foo (arg x, arg y, arg z)
+func foo (arg x)
 (
-	int x;	
-	int y;
+	z = 56 ;
 )
 
 func mah (arg n, arg b)

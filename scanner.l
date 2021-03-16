@@ -7,11 +7,11 @@ digit [0-9]
 number [digit]+
 letter [a-zA-Z]
 %%
-"(" {printf(" LPAR"); return LPAR;}
-")" {printf(" RPAR"); return RPAR;}
-"," {printf(" COMMA");return COMMA;}
+"(" {printf(" LPAR "); return LPAR;}
+")" {printf(" RPAR "); return RPAR;}
+"," {printf(" COMMA ");return COMMA;}
 ";" {return SC;}
-"=" {return ASSIGNMENT;}
+"=" {printf(" ASSIGNMENT "); return ASSIGNMENT;}
 "==" {return EQUAL;}
 "!=" {return INEQUAL;}
 ">" {return GREATER;}
@@ -24,12 +24,12 @@ letter [a-zA-Z]
 "return" {return RETURN;}
 "if" {return IF;}
 "else" {return ELSE;}
-"func" {printf(" FUNC"); return FUNC;}
+"func" {printf(" FUNC "); return FUNC;}
 "msin" {return MAIN;}
-"arg"  { printf(" ARG"); return ARG;}
+"arg"  { printf(" ARG "); return ARG;}
 "int" {return INT;}
-{number} {yylval.value = atoi(yytext); return NUMBER;}
-({letter}|_)({letter}|{digit}|_)* {yylval.identifier_name = strdup(yytext); printf(" IDENTIFIER"); return IDENTIFIER;}
+([0-9]+) {yylval.value = atoi(yytext); printf(" NUMBER "); return NUMBER;}
+({letter}|_)({letter}|{digit}|_)* {yylval.identifier_name = strdup(yytext); printf(" IDENTIFIER "); return IDENTIFIER;}
 [ \t\n]+ ; //whitespace ignore
 
 %%

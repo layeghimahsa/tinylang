@@ -207,6 +207,8 @@ struct dst_node* new_dstnode_variableassignment(char *n, int val)
 	strcpy(node->name,n);
 	node->down = NULL;
 	node->side = NULL;
+	printf("\n name: %s\n",node->name);
+	printf("value: %d\n",node->value);
 	return node;
 }
 

@@ -1849,6 +1849,8 @@ struct dst_node* new_dstnode_variableassignment(char *n, int val)
 	strcpy(node->name,n);
 	node->down = NULL;
 	node->side = NULL;
+	printf("\n name: %s\n",node->name);
+	printf("value: %d\n",node->value);
 	return node;
 }
 
@@ -1984,7 +1986,6 @@ void print_dst(struct dst_node *dst){
 		} 
 		
 		temp = temp->down;
-		printf("type: %s", getType(temp->type));
 		printf("\n----------------\n");
 
 	}
