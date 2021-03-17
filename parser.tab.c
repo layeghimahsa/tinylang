@@ -1943,10 +1943,48 @@ int check_semantics(struct dst_node *dst){
 void print_dst(struct dst_node *dst){
 
 	struct dst_node *temp;
-	struct dst_node *func_temp;
-	struct dst_node *statement_temp;
+	struct dst_node *func_ptr;
+	struct dst_node *statement_ptr;
 	temp = dst;
-	while(temp != NULL ){
+	
+	if(temp == NULL){
+		printf("The node could not be empty!");
+		return;
+	}
+	
+	printf("name: %s\n", temp->name);
+	printf("|\n");
+	printf("∨\n");
+	func_ptr = temp->down;
+	
+	while(func_ptr != NULL){
+			
+		printf("name: %s", func_ptr->name);
+		printf(", type: %s", getType(func_ptr->type));
+		printf(", value or arg: %d", func_ptr->value);
+		
+		if(func_ptr->down != NULL){
+			printf("\t\n->\n");
+			printf("\tname: %s", func_ptr->down->name);
+			printf("\t, type: %s", getType(func_ptr->down->type));
+			printf("\t, value or arg: %d", func_ptr->down->value);
+			
+			statement_ptr = func_ptr->down;
+			while(statement_ptr->side != NULL){
+				printf("\t\n->\n");
+				printf("\tname: %s", statement_ptr->side->name);
+				printf("\t, type: %s", getType(statement_ptr->side->type));
+				printf("\t, value or arg: %d", statement_ptr->side->value);
+				statement_ptr = statement_ptr->side;
+			}
+		}
+		
+		func_ptr = func_ptr->side;
+		printf("\n----------------\n");
+	
+	}
+	
+	/*while(temp != NULL ){
 		if(temp->type == PROGRAM){
 			printf("name: %s\n", temp->name);
 			printf("|\n");
@@ -1988,7 +2026,7 @@ void print_dst(struct dst_node *dst){
 		temp = temp->down;
 		printf("\n----------------\n");
 
-	}
+	}*/
 
 }
 
