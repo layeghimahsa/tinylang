@@ -23,8 +23,13 @@ int main(int argc, char *argv[]){
 	
 	yyparse();
 	print_dst(dst);
+	
 	printf("------------------------------------------------\n");
 	printf("Now it comes to symtable\n");
 	print_symboltable(symtable);
 
+	printf("------------------------------------------------\n");
+	printf("Now it comes to check_semantics\n");
+	int error = check_semantics(dst);
+	printf("error value is: %d\n", error);
 }

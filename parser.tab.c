@@ -1981,12 +1981,77 @@ int get(struct symbol_node *head, char *n){
 		current = current->next;
 	}
 	
+	
+	
+	
+	
 	//return error!
 }
 
 
 int check_semantics(struct dst_node *dst){
-
+	
+	//error types -> 0 = duplicate function
+	int error = 0;
+	
+	//1.function declaration
+	struct dst_node *func_ptr;
+	func_ptr = dst->down;
+	while(func_ptr != NULL){
+		//printf("name: %s\n", func_ptr->name);
+		char * func_name = func_ptr->name;
+		//printf("name: vatiable %s\n", func_name);
+		bool result = is_function_exists(symtable, func_name);
+		//printf("bool: %d\n", result);
+		if(result == true){
+			error = 1; //duplicate function
+			return error;
+		}
+		func_ptr = func_ptr->side;
+	}
+	
+	
+	//2.variable declaration
+	struct dst_node *statement_ptr;
+	
+	func_ptr = dst->down;
+	
+	while(func_ptr != NULL){
+		
+		if(func_ptr->down != NULL){
+			
+			if(func_ptr->down->type == VARIABLE_DECLARATION){
+				char * func_name = func_ptr->down->name;
+				char * scope = func_ptr->name;
+				
+				bool result = is_variable_exists(symtable, func_name, scope);
+				
+				if(result == true){
+					error = 2; //duplicate variable in matching scope
+					return error;
+				}
+			}
+			
+			statement_ptr = func_ptr->down;
+			while(statement_ptr->side != NULL){
+				if(statement_ptr->side->type == VARIABLE_DECLARATION){
+					char * func_name = statement_ptr->side->name;
+					char * scope = func_ptr->name;
+					printf("checking the scope %s", scope);
+					bool result = is_variable_exists(symtable, func_name, scope);
+					if(result == true){
+						error = 2; //duplicate variable in matching scope
+						return error;
+					}
+					statement_ptr = statement_ptr->side;
+				}
+			}
+		}
+		
+		func_ptr = func_ptr->side;
+	}
+	
+	
 }
 
 void print_dst(struct dst_node *dst){
@@ -2109,6 +2174,40 @@ char* getType_symtbale(int i){
 	
 	return name;
 }		
+
+bool is_function_exists(struct symbol_node *symtable, char *n){
+	
+	bool exist = false;
+	while(symtable != NULL){
+		if(strcmp(symtable->name, n) == 0){
+			printf("miad tu if?\n");
+			if(symtable->type == 0){
+				exist = true;
+				return exist;
+			}
+		}
+		symtable = symtable->next;
+	}
+	
+}
+
+bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
+	
+	bool exist = false;
+	while(symtable != NULL){
+		if(strcmp(symtable->name, n) == 0){
+			if(symtable->type == 1){
+				if(strcmp(symtable->scope, scope) == 0){
+					exist = true;
+					return exist;
+				}
+			}
+		}
+		symtable = symtable->next;
+	}
+	
+}
+
 
 /*struct IR_node *generate_IR(struct dst_node *dst){
 	

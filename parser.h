@@ -1,6 +1,8 @@
 #ifndef HEADER_FILE
 #define HEADER_FILE
 
+#include <stdbool.h>
+
 //DST
 enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, ELSE_STATEMENT};
 
@@ -44,6 +46,9 @@ char* getType(int i);
 void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, char *scope);
 void print_symboltable(struct symbol_node *symtable);
 char* getType_symtbale(int i);
+bool is_function_exists(struct symbol_node *symtable, char *n);
+bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope);
+int check_semantics(struct dst_node *dst);
 
 #endif
 
