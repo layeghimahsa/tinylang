@@ -9,7 +9,7 @@
 	extern int yylineno;
 	int number_of_args = 1;
 	int counter = 0;
-
+	char *mother_function;
 	//------------------------------------------------------------------------------
 	
 	
@@ -97,20 +97,24 @@ function_list:	function function_list {$1->side = $2; $$ = $1; }
 function: function_header LPAR statement_list RPAR
 {
 	$$ = new_dstnode_functiondeclaration($1);
-	$$->down = $3;
+	$$->down = $3; 
 };
 
 function_header: FUNC IDENTIFIER LPAR function_args RPAR
 {
-		struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-		node->name = $2;
-		node->value = number_of_args;
-		node->type = FUNCTION_HEADER;
-		node->down = NULL;
-		node->side = NULL;
-		number_of_args = 1;
-		counter = 0;
-		$$ = node;
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->name = $2;
+	node->value = number_of_args;
+	node->type = FUNCTION_HEADER;
+	node->down = NULL;
+	node->side = NULL;
+	number_of_args = 1;
+	counter = 0;
+	$$ = node;
+	
+	mother_function = $2; // This is used for variable scope
+	printf("\nmother function is: %s\n", mother_function);
+	add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 };
 
@@ -122,6 +126,7 @@ function_args: ARG IDENTIFIER COMMA function_args { number_of_args = number_of_a
 variable_declaration: INT IDENTIFIER SC
 {
 	$$ = new_dstnode_variabledeclaration($2);
+	add_to_symtable(&symtable, $2, 0, 1, mother_function);
 };
 
 
@@ -180,7 +185,7 @@ statement: variable_declaration {$$ = $1;}
 	 | else_statement {$$ = $1;};
 	 
 
-statement_list: statement statement_list { $1->side = $2; $$ = $1;  {printf("\n statement listttttttt \n");} }
+statement_list: statement statement_list { $1->side = $2; $$ = $1; }//printf("\n statement listttttttt \n"); 
 		| { $$ = NULL;};
 
 
@@ -207,8 +212,6 @@ struct dst_node* new_dstnode_variableassignment(char *n, int val)
 	strcpy(node->name,n);
 	node->down = NULL;
 	node->side = NULL;
-	printf("\n name: %s\n",node->name);
-	printf("value: %d\n",node->value);
 	return node;
 }
 
@@ -260,21 +263,67 @@ struct dst_node* new_program_dstnode()
 
 
 
-void add_to_symtable(struct symbol_node *head, char *n, int val){
+void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, char *scope){
 
-	struct symbol_node *current;
-	current = head;
+
+
+	struct symbol_node * new_node = (struct symbol_node *) malloc(sizeof(struct symbol_node)); 
+	  
+	struct symbol_node  *last = *symtable;  
+	  
+	    /* 2. put in the data  */
+	new_node->arg_number = val;
+	new_node->name = (char *) malloc(strlen(n)+1);
+	strcpy(new_node->name,n);
+	new_node->type = type;
+	new_node->scope = (char *) malloc(strlen(scope)+1);
+	strcpy(new_node->scope,scope);
+	new_node->next = NULL; 
+	  
+
+	if (*symtable == NULL) 
+	{ 
+	   *symtable = new_node; 
+	   return; 
+	} 
+	  
+	while (last->next != NULL) 
+		last = last->next; 
+	  
+	last->next = new_node; 
+	return; 
+
 	
-	while(current->next != NULL){
-		current = current->next;
+	/*if(symtable == NULL){
+		symtable = (struct symbol_node *) malloc(sizeof(struct symbol_node));
+		symtable->arg_number = val;
+		symtable->name = (char *) malloc(strlen(n)+1);
+		strcpy(symtable->name,n);
+		symtable->type = type;
+		symtable->scope = (char *) malloc(strlen(scope)+1);
+		strcpy(symtable->scope,scope);
+		symtable->next = NULL;
+		printf("the name is %s form add_to_sym \n", symtable->name);
+		return;
 	}
 	
-	current->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
-	current->next->value = val;
-	current->next->name = (char *) malloc(strlen(n)+1);
-	strcpy(current->next->name,n);
-	current->next->next = NULL;
-	return;
+	while(symtable->next != NULL){
+		symtable = symtable->next;
+	}
+	
+	symtable->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
+	symtable->next->arg_number = val;
+	symtable->next->name = (char *) malloc(strlen(n)+1);
+	strcpy(symtable->next->name,n);
+	symtable->next->type = type;
+	symtable->next->scope = (char *) malloc(strlen(scope)+1);
+	strcpy(symtable->next->scope,scope);
+	symtable->next->next = NULL;
+	
+	printf("the name is %s form add_to_sym (not first)\n", symtable->next->name);
+	
+	return;*/
+	
 
 }
 
@@ -285,7 +334,7 @@ int get(struct symbol_node *head, char *n){
 	
 	while(current->next != NULL){
 		if(current->name == n){
-			return current->value;
+			return current->arg_number;
 		}
 		current = current->next;
 	}
@@ -341,50 +390,6 @@ void print_dst(struct dst_node *dst){
 		printf("\n----------------\n");
 	
 	}
-	
-	/*while(temp != NULL ){
-		if(temp->type == PROGRAM){
-			printf("name: %s\n", temp->name);
-			printf("|\n");
-			printf("∨\n");
-		} else if(temp->type == FUNCTION){
-			printf("name: %s", temp->name);
-			printf(", type: %s", getType(temp->type));
-			printf(", value or arg: %d", temp->value);
-			
-			func_temp = temp;
-			while(temp->side != NULL){
-				printf("\n->\n");
-				printf("name: %s", temp->side->name);
-				printf(", type: %s", getType(temp->side->type));
-				printf(", value or arg: %d", temp->side->value);
-				temp = temp->side;
-			}
-			temp = func_temp;
-			
-			
-		} else {
-			printf("\n tuye else miad????????????????????? \n");
-			printf("name: %s", temp->name);
-			printf(", type: %s", getType(temp->type));
-			printf(", value or arg: %d", temp->value);
-			
-			statement_temp = temp;
-			while(temp->side != NULL){
-				printf("\n->\n");
-				printf("name: %s", temp->side->name);
-				printf(", type: %s", getType(temp->side->type));
-				printf(", value or arg: %d", temp->side->value);
-				temp = temp->side;
-			}
-			temp = statement_temp;
-		
-		} 
-		
-		temp = temp->down;
-		printf("\n----------------\n");
-
-	}*/
 
 }
 
@@ -423,7 +428,45 @@ char* getType(int i){
 }		
 
 
+//*****************************print symbol table********************************
 
+void print_symboltable(struct symbol_node *symtable){
+	
+	struct symbol_node *current;
+	current = symtable;
+
+	
+	while(current != NULL){
+		
+		printf("Type: %s", getType_symtbale(current->type));
+		printf(", Name: %s", current->name);
+		printf(", Arg Number: %d", current->arg_number);
+		printf(", Scope: %s\n", current->scope);
+		
+		current = current->next;
+		
+	}
+
+}
+
+char* getType_symtbale(int i){
+
+	char * name;
+	switch(i){
+	
+	case 0: 
+		name = "FUNCTION";
+		break;
+	case 1: 
+		name = "VARIABLE";
+		break;					
+	default: 
+		break;	
+		
+	}
+	
+	return name;
+}		
 
 /*struct IR_node *generate_IR(struct dst_node *dst){
 	

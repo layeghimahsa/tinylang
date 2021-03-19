@@ -78,7 +78,7 @@
 	extern int yylineno;
 	int number_of_args = 1;
 	int counter = 0;
-
+	char *mother_function;
 	//------------------------------------------------------------------------------
 	
 	
@@ -576,10 +576,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    87,    87,    94,    95,    97,   103,   117,   118,   122,
-     128,   135,   136,   137,   138,   139,   140,   141,   144,   154,
-     155,   156,   157,   159,   160,   161,   162,   163,   164,   167,
-     177,   178,   179,   180,   183,   184
+       0,    87,    87,    94,    95,    97,   103,   121,   122,   126,
+     133,   140,   141,   142,   143,   144,   145,   146,   149,   159,
+     160,   161,   162,   164,   165,   166,   167,   168,   169,   172,
+     182,   183,   184,   185,   188,   189
 };
 #endif
 
@@ -1443,7 +1443,7 @@ yyreduce:
 #line 98 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
-	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
+	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
 }
 #line 1449 "parser.tab.c"
     break;
@@ -1451,88 +1451,93 @@ yyreduce:
   case 6:
 #line 104 "parser.y"
 {
-		struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-		node->name = (yyvsp[-3].identifier_name);
-		node->value = number_of_args;
-		node->type = FUNCTION_HEADER;
-		node->down = NULL;
-		node->side = NULL;
-		number_of_args = 1;
-		counter = 0;
-		(yyval.dst_ptr) = node;
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->name = (yyvsp[-3].identifier_name);
+	node->value = number_of_args;
+	node->type = FUNCTION_HEADER;
+	node->down = NULL;
+	node->side = NULL;
+	number_of_args = 1;
+	counter = 0;
+	(yyval.dst_ptr) = node;
+	
+	mother_function = (yyvsp[-3].identifier_name); // This is used for variable scope
+	printf("\nmother function is: %s\n", mother_function);
+	add_to_symtable(&symtable, (yyvsp[-3].identifier_name), number_of_args, 0, "null");
 
 }
-#line 1466 "parser.tab.c"
+#line 1470 "parser.tab.c"
     break;
 
   case 7:
-#line 117 "parser.y"
+#line 121 "parser.y"
                                                   { number_of_args = number_of_args + counter;}
-#line 1472 "parser.tab.c"
+#line 1476 "parser.tab.c"
     break;
 
   case 8:
-#line 118 "parser.y"
+#line 122 "parser.y"
                                { counter = 1; }
-#line 1478 "parser.tab.c"
+#line 1482 "parser.tab.c"
     break;
 
   case 9:
-#line 123 "parser.y"
+#line 127 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
+	add_to_symtable(&symtable, (yyvsp[-1].identifier_name), 0, 1, mother_function);
 }
-#line 1486 "parser.tab.c"
+#line 1491 "parser.tab.c"
     break;
 
   case 10:
-#line 129 "parser.y"
+#line 134 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-3].identifier_name), (yyvsp[-1].value));
 	//add_to_symtable(symtable, $1, $3);
 	 	
 }
-#line 1496 "parser.tab.c"
+#line 1501 "parser.tab.c"
     break;
 
   case 12:
-#line 136 "parser.y"
+#line 141 "parser.y"
                  { (yyval.value) = get(symtable, (yyvsp[0].identifier_name)); }
-#line 1502 "parser.tab.c"
+#line 1507 "parser.tab.c"
     break;
 
   case 13:
-#line 137 "parser.y"
+#line 142 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) + (yyvsp[0].value); }
-#line 1508 "parser.tab.c"
+#line 1513 "parser.tab.c"
     break;
 
   case 14:
-#line 138 "parser.y"
+#line 143 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) - (yyvsp[0].value); }
-#line 1514 "parser.tab.c"
+#line 1519 "parser.tab.c"
     break;
 
   case 15:
-#line 139 "parser.y"
+#line 144 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) * (yyvsp[0].value); }
-#line 1520 "parser.tab.c"
+#line 1525 "parser.tab.c"
     break;
 
   case 16:
-#line 140 "parser.y"
+#line 145 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) / (yyvsp[0].value); }
-#line 1526 "parser.tab.c"
+#line 1531 "parser.tab.c"
     break;
 
   case 17:
-#line 141 "parser.y"
+#line 146 "parser.y"
                     { (yyval.value) = (yyvsp[-1].value); }
-#line 1532 "parser.tab.c"
+#line 1537 "parser.tab.c"
     break;
 
   case 18:
-#line 145 "parser.y"
+#line 150 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1541,11 +1546,11 @@ yyreduce:
 	(yyval.dst_ptr)->side = NULL;
 
 }
-#line 1545 "parser.tab.c"
+#line 1550 "parser.tab.c"
     break;
 
   case 29:
-#line 168 "parser.y"
+#line 173 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1553,47 +1558,47 @@ yyreduce:
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->side = NULL;
 }
-#line 1557 "parser.tab.c"
+#line 1562 "parser.tab.c"
     break;
 
   case 30:
-#line 177 "parser.y"
+#line 182 "parser.y"
                                 {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1563 "parser.tab.c"
+#line 1568 "parser.tab.c"
     break;
 
   case 31:
-#line 178 "parser.y"
+#line 183 "parser.y"
                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1569 "parser.tab.c"
+#line 1574 "parser.tab.c"
     break;
 
   case 32:
-#line 179 "parser.y"
+#line 184 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1575 "parser.tab.c"
+#line 1580 "parser.tab.c"
     break;
 
   case 33:
-#line 180 "parser.y"
+#line 185 "parser.y"
                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1581 "parser.tab.c"
+#line 1586 "parser.tab.c"
     break;
 
   case 34:
-#line 183 "parser.y"
-                                         { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr);  {printf("\n statement listttttttt \n");} }
-#line 1587 "parser.tab.c"
+#line 188 "parser.y"
+                                         { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
+#line 1592 "parser.tab.c"
     break;
 
   case 35:
-#line 184 "parser.y"
+#line 189 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
-#line 1593 "parser.tab.c"
+#line 1598 "parser.tab.c"
     break;
 
 
-#line 1597 "parser.tab.c"
+#line 1602 "parser.tab.c"
 
       default: break;
     }
@@ -1825,7 +1830,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 187 "parser.y"
+#line 192 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -1849,8 +1854,6 @@ struct dst_node* new_dstnode_variableassignment(char *n, int val)
 	strcpy(node->name,n);
 	node->down = NULL;
 	node->side = NULL;
-	printf("\n name: %s\n",node->name);
-	printf("value: %d\n",node->value);
 	return node;
 }
 
@@ -1902,21 +1905,67 @@ struct dst_node* new_program_dstnode()
 
 
 
-void add_to_symtable(struct symbol_node *head, char *n, int val){
+void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, char *scope){
 
-	struct symbol_node *current;
-	current = head;
+
+
+	struct symbol_node * new_node = (struct symbol_node *) malloc(sizeof(struct symbol_node)); 
+	  
+	struct symbol_node  *last = *symtable;  
+	  
+	    /* 2. put in the data  */
+	new_node->arg_number = val;
+	new_node->name = (char *) malloc(strlen(n)+1);
+	strcpy(new_node->name,n);
+	new_node->type = type;
+	new_node->scope = (char *) malloc(strlen(scope)+1);
+	strcpy(new_node->scope,scope);
+	new_node->next = NULL; 
+	  
+
+	if (*symtable == NULL) 
+	{ 
+	   *symtable = new_node; 
+	   return; 
+	} 
+	  
+	while (last->next != NULL) 
+		last = last->next; 
+	  
+	last->next = new_node; 
+	return; 
+
 	
-	while(current->next != NULL){
-		current = current->next;
+	/*if(symtable == NULL){
+		symtable = (struct symbol_node *) malloc(sizeof(struct symbol_node));
+		symtable->arg_number = val;
+		symtable->name = (char *) malloc(strlen(n)+1);
+		strcpy(symtable->name,n);
+		symtable->type = type;
+		symtable->scope = (char *) malloc(strlen(scope)+1);
+		strcpy(symtable->scope,scope);
+		symtable->next = NULL;
+		printf("the name is %s form add_to_sym \n", symtable->name);
+		return;
 	}
 	
-	current->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
-	current->next->value = val;
-	current->next->name = (char *) malloc(strlen(n)+1);
-	strcpy(current->next->name,n);
-	current->next->next = NULL;
-	return;
+	while(symtable->next != NULL){
+		symtable = symtable->next;
+	}
+	
+	symtable->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
+	symtable->next->arg_number = val;
+	symtable->next->name = (char *) malloc(strlen(n)+1);
+	strcpy(symtable->next->name,n);
+	symtable->next->type = type;
+	symtable->next->scope = (char *) malloc(strlen(scope)+1);
+	strcpy(symtable->next->scope,scope);
+	symtable->next->next = NULL;
+	
+	printf("the name is %s form add_to_sym (not first)\n", symtable->next->name);
+	
+	return;*/
+	
 
 }
 
@@ -1927,7 +1976,7 @@ int get(struct symbol_node *head, char *n){
 	
 	while(current->next != NULL){
 		if(current->name == n){
-			return current->value;
+			return current->arg_number;
 		}
 		current = current->next;
 	}
@@ -1983,50 +2032,6 @@ void print_dst(struct dst_node *dst){
 		printf("\n----------------\n");
 	
 	}
-	
-	/*while(temp != NULL ){
-		if(temp->type == PROGRAM){
-			printf("name: %s\n", temp->name);
-			printf("|\n");
-			printf("∨\n");
-		} else if(temp->type == FUNCTION){
-			printf("name: %s", temp->name);
-			printf(", type: %s", getType(temp->type));
-			printf(", value or arg: %d", temp->value);
-			
-			func_temp = temp;
-			while(temp->side != NULL){
-				printf("\n->\n");
-				printf("name: %s", temp->side->name);
-				printf(", type: %s", getType(temp->side->type));
-				printf(", value or arg: %d", temp->side->value);
-				temp = temp->side;
-			}
-			temp = func_temp;
-			
-			
-		} else {
-			printf("\n tuye else miad????????????????????? \n");
-			printf("name: %s", temp->name);
-			printf(", type: %s", getType(temp->type));
-			printf(", value or arg: %d", temp->value);
-			
-			statement_temp = temp;
-			while(temp->side != NULL){
-				printf("\n->\n");
-				printf("name: %s", temp->side->name);
-				printf(", type: %s", getType(temp->side->type));
-				printf(", value or arg: %d", temp->side->value);
-				temp = temp->side;
-			}
-			temp = statement_temp;
-		
-		} 
-		
-		temp = temp->down;
-		printf("\n----------------\n");
-
-	}*/
 
 }
 
@@ -2065,7 +2070,45 @@ char* getType(int i){
 }		
 
 
+//*****************************print symbol table********************************
 
+void print_symboltable(struct symbol_node *symtable){
+	
+	struct symbol_node *current;
+	current = symtable;
+
+	
+	while(current != NULL){
+		
+		printf("Type: %s", getType_symtbale(current->type));
+		printf(", Name: %s", current->name);
+		printf(", Arg Number: %d", current->arg_number);
+		printf(", Scope: %s\n", current->scope);
+		
+		current = current->next;
+		
+	}
+
+}
+
+char* getType_symtbale(int i){
+
+	char * name;
+	switch(i){
+	
+	case 0: 
+		name = "FUNCTION";
+		break;
+	case 1: 
+		name = "VARIABLE";
+		break;					
+	default: 
+		break;	
+		
+	}
+	
+	return name;
+}		
 
 /*struct IR_node *generate_IR(struct dst_node *dst){
 	

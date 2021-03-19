@@ -4,6 +4,8 @@
 
 extern FILE *yyin;
 extern struct dst_node *dst;
+extern struct symbol_node *symtable;
+
 int main(int argc, char *argv[]){
 
 	if(argc != 2){
@@ -21,5 +23,8 @@ int main(int argc, char *argv[]){
 	
 	yyparse();
 	print_dst(dst);
+	printf("------------------------------------------------\n");
+	printf("Now it comes to symtable\n");
+	print_symboltable(symtable);
 
 }

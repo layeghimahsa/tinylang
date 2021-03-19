@@ -1,6 +1,6 @@
 func foo (arg x)
 (
-	z = 56 ;
+
 )
 
 func mah (arg n, arg b)
