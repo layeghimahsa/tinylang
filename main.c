@@ -33,17 +33,11 @@ int main(int argc, char *argv[]){
 	
 	//semantic analysis to check validity of code
 	
-	int error = check_semantics(dst);
-	printf("error value is: %d\n", error);
+	int errors = check_semantics(dst);
 	
-	if(error != 0)
+	if(errors != 0)
 	{
-		printf("%d errors found during semantic analysis.\n",error);
-		if(error == 1){
-			printf("Function is already defined!\n");
-		}else if (error == 2){
-			printf("Variable is alredy defined!\n");
-		}
+		printf("%d errors found during semantic analysis.\n",errors);
 		return 0;
 	}
 	

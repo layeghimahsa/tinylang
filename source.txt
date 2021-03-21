@@ -3,6 +3,11 @@ func foo (arg x)
 
 )
 
+func foo (arg y)
+(
+
+)
+
 func mah (arg n, arg b)
 (
 	int p;	

@@ -362,8 +362,8 @@ int check_semantics(struct dst_node *dst){
 		bool result = is_function_exists(symtable, func_name);
 		//printf("bool: %d\n", result);
 		if(result == true){
-			error = 1; //duplicate function
-			return error;
+			error += 1; //duplicate function
+			//return error;
 		}else{
 			add_to_symtable(&symtable, func_name, func_ptr->value, 0, "null");
 		}
@@ -387,8 +387,8 @@ int check_semantics(struct dst_node *dst){
 				bool result = is_variable_exists(symtable, variable_name, scope);
 				
 				if(result == true){
-					error = 2; //duplicate variable in matching scope
-					return error;
+					error += 1; //duplicate variable in matching scope
+					//return error;
 				} else{
 					add_to_symtable(&symtable, variable_name, 0, 1, scope);
 				}
@@ -401,8 +401,8 @@ int check_semantics(struct dst_node *dst){
 					char * scope = func_ptr->name;
 					bool result = is_variable_exists(symtable, variable_name, scope);
 					if(result == true){
-						error = 2; //duplicate variable in matching scope
-						return error;
+						error += 1; //duplicate variable in matching scope
+						//return error;
 					}else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
@@ -413,6 +413,9 @@ int check_semantics(struct dst_node *dst){
 		
 		func_ptr = func_ptr->side;
 	} 
+	
+	
+	return error;
 	
 	
 }
@@ -543,7 +546,6 @@ bool is_function_exists(struct symbol_node *symtable, char *n){
 	bool exist = false;
 	while(symtable != NULL){
 		if(strcmp(symtable->name, n) == 0){
-			printf("miad tu if?\n");
 			if(symtable->type == 0){
 				exist = true;
 				return exist;
