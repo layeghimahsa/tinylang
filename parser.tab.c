@@ -1463,7 +1463,7 @@ yyreduce:
 	
 	mother_function = (yyvsp[-3].identifier_name); // This is used for variable scope
 	printf("\nmother function is: %s\n", mother_function);
-	add_to_symtable(&symtable, (yyvsp[-3].identifier_name), number_of_args, 0, "null");
+	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 }
 #line 1470 "parser.tab.c"
@@ -1485,7 +1485,7 @@ yyreduce:
 #line 127 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
-	add_to_symtable(&symtable, (yyvsp[-1].identifier_name), 0, 1, mother_function);
+	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 }
 #line 1491 "parser.tab.c"
     break;
@@ -2006,6 +2006,8 @@ int check_semantics(struct dst_node *dst){
 		if(result == true){
 			error = 1; //duplicate function
 			return error;
+		}else{
+			add_to_symtable(&symtable, func_name, func_ptr->value, 0, "null");
 		}
 		func_ptr = func_ptr->side;
 	}
@@ -2021,27 +2023,30 @@ int check_semantics(struct dst_node *dst){
 		if(func_ptr->down != NULL){
 			
 			if(func_ptr->down->type == VARIABLE_DECLARATION){
-				char * func_name = func_ptr->down->name;
+				char * variable_name = func_ptr->down->name;
 				char * scope = func_ptr->name;
 				
-				bool result = is_variable_exists(symtable, func_name, scope);
+				bool result = is_variable_exists(symtable, variable_name, scope);
 				
 				if(result == true){
 					error = 2; //duplicate variable in matching scope
 					return error;
+				} else{
+					add_to_symtable(&symtable, variable_name, 0, 1, scope);
 				}
 			}
 			
 			statement_ptr = func_ptr->down;
 			while(statement_ptr->side != NULL){
 				if(statement_ptr->side->type == VARIABLE_DECLARATION){
-					char * func_name = statement_ptr->side->name;
+					char * variable_name = statement_ptr->side->name;
 					char * scope = func_ptr->name;
-					printf("checking the scope %s", scope);
-					bool result = is_variable_exists(symtable, func_name, scope);
+					bool result = is_variable_exists(symtable, variable_name, scope);
 					if(result == true){
 						error = 2; //duplicate variable in matching scope
 						return error;
+					}else{
+						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
 					statement_ptr = statement_ptr->side;
 				}
@@ -2049,7 +2054,7 @@ int check_semantics(struct dst_node *dst){
 		}
 		
 		func_ptr = func_ptr->side;
-	}
+	} 
 	
 	
 }

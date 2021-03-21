@@ -24,12 +24,29 @@ int main(int argc, char *argv[]){
 	yyparse();
 	print_dst(dst);
 	
-	printf("------------------------------------------------\n");
-	printf("Now it comes to symtable\n");
-	print_symboltable(symtable);
+	//printf("------------------------------------------------\n");
+	//printf("Now it comes to symtable\n");
+	//print_symboltable(symtable);
 
 	printf("------------------------------------------------\n");
 	printf("Now it comes to check_semantics\n");
+	
+	//semantic analysis to check validity of code
+	
 	int error = check_semantics(dst);
 	printf("error value is: %d\n", error);
+	
+	if(error != 0)
+	{
+		printf("%d errors found during semantic analysis.\n",error);
+		if(error == 1){
+			printf("Function is already defined!\n");
+		}else if (error == 2){
+			printf("Variable is alredy defined!\n");
+		}
+		return 0;
+	}
+	
+	
+	//print_symboltable(symtable);
 }

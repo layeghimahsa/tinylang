@@ -6,7 +6,7 @@ func foo (arg x)
 func mah (arg n, arg b)
 (
 	int p;	
-	int q;
+	int p;
 )
 
 func hel (arg s)
