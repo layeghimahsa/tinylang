@@ -10,39 +10,7 @@
 	int number_of_args = 1;
 	int counter = 0;
 	char *mother_function;
-	//------------------------------------------------------------------------------
 	
-	
-	
-	//------------------------------------------------------------------------------
-	
-	//P_code generarion 
-	/*enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF};
-	enum p_code_operand_type {REGISTER, CONSTANT, IDENTIFIER};
-	enum p_code_register {PC, SP, BP};
-	
-	struct IR_node{
-		
-		char *label;
-		int address;
-		enum p_code_inst instruction;
-		enum p_code_operand_type operand_type;
-		
-		union
-		{
-		   char *identifier;
-		   int constant;
-		   enum p_code_register p_register;
-		} p_code_operand;
-		
-		struct IR_node *next;
-	
-	};*/
-	
-	//------------------------------------------------------------------------------
-		
-
-
 %}
 
 //Token Values
@@ -133,6 +101,7 @@ variable_declaration: INT IDENTIFIER SC
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
 	$$ = new_dstnode_variableassignment($1, $3);
+	//$$->down = $3;
 	//add_to_symtable(symtable, $1, $3);
 	 	
 };
@@ -406,8 +375,10 @@ int check_semantics(struct dst_node *dst){
 					}else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
-					statement_ptr = statement_ptr->side;
+					//statement_ptr = statement_ptr->side;
 				}
+				
+				statement_ptr = statement_ptr->side;
 			}
 		}
 		

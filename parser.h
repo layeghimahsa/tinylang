@@ -31,6 +31,36 @@ struct symbol_node
 
 };
 
+
+	
+//------------------------------------------------------------------------------
+
+//P_code generarion 
+/*enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF};
+enum p_code_operand_type {REGISTER, CONSTANT, IDENTIFIER};
+enum p_code_register {PC, SP, BP};
+
+struct IR_node{
+	
+	char *label;
+	int address;
+	enum p_code_inst instruction;
+	enum p_code_operand_type operand_type;
+	
+	union
+	{
+	   char *identifier;
+	   int constant;
+	   enum p_code_register p_register;
+	} p_code_operand;
+	
+	struct IR_node *next;
+
+};*/
+
+//------------------------------------------------------------------------------
+	
+
 struct symbol_node *symtable;
 
 // prototypes

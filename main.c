@@ -42,5 +42,5 @@ int main(int argc, char *argv[]){
 	}
 	
 	
-	//print_symboltable(symtable);
+	print_symboltable(symtable);
 }

@@ -1,17 +1,14 @@
 func foo (arg x)
 (
-
-)
-
-func foo (arg y)
-(
-
+	int s;
+	int q;
+	int l;
+	s = 45;
 )
 
 func mah (arg n, arg b)
 (
 	int p;	
-	int p;
 )
 
 func hel (arg s)

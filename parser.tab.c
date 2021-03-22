@@ -79,41 +79,9 @@
 	int number_of_args = 1;
 	int counter = 0;
 	char *mother_function;
-	//------------------------------------------------------------------------------
 	
-	
-	
-	//------------------------------------------------------------------------------
-	
-	//P_code generarion 
-	/*enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF};
-	enum p_code_operand_type {REGISTER, CONSTANT, IDENTIFIER};
-	enum p_code_register {PC, SP, BP};
-	
-	struct IR_node{
-		
-		char *label;
-		int address;
-		enum p_code_inst instruction;
-		enum p_code_operand_type operand_type;
-		
-		union
-		{
-		   char *identifier;
-		   int constant;
-		   enum p_code_register p_register;
-		} p_code_operand;
-		
-		struct IR_node *next;
-	
-	};*/
-	
-	//------------------------------------------------------------------------------
-		
 
-
-
-#line 117 "parser.tab.c"
+#line 85 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -192,13 +160,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 61 "parser.y"
+#line 29 "parser.y"
 
 	char *identifier_name;
 	int value; 
 	struct dst_node *dst_ptr;
 
-#line 202 "parser.tab.c"
+#line 170 "parser.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -576,10 +544,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    87,    87,    94,    95,    97,   103,   121,   122,   126,
-     133,   140,   141,   142,   143,   144,   145,   146,   149,   159,
-     160,   161,   162,   164,   165,   166,   167,   168,   169,   172,
-     182,   183,   184,   185,   188,   189
+       0,    55,    55,    62,    63,    65,    71,    89,    90,    94,
+     101,   109,   110,   111,   112,   113,   114,   115,   118,   128,
+     129,   130,   131,   133,   134,   135,   136,   137,   138,   141,
+     151,   152,   153,   154,   157,   158
 };
 #endif
 
@@ -1419,37 +1387,37 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 88 "parser.y"
+#line 56 "parser.y"
         {
 		dst = new_program_dstnode();
 		dst->down = (yyvsp[0].dst_ptr);
 	}
-#line 1428 "parser.tab.c"
+#line 1396 "parser.tab.c"
     break;
 
   case 3:
-#line 94 "parser.y"
+#line 62 "parser.y"
                                        {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1434 "parser.tab.c"
+#line 1402 "parser.tab.c"
     break;
 
   case 4:
-#line 95 "parser.y"
+#line 63 "parser.y"
                            {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1440 "parser.tab.c"
+#line 1408 "parser.tab.c"
     break;
 
   case 5:
-#line 98 "parser.y"
+#line 66 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
 }
-#line 1449 "parser.tab.c"
+#line 1417 "parser.tab.c"
     break;
 
   case 6:
-#line 104 "parser.y"
+#line 72 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = (yyvsp[-3].identifier_name);
@@ -1466,78 +1434,79 @@ yyreduce:
 	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 }
-#line 1470 "parser.tab.c"
+#line 1438 "parser.tab.c"
     break;
 
   case 7:
-#line 121 "parser.y"
+#line 89 "parser.y"
                                                   { number_of_args = number_of_args + counter;}
-#line 1476 "parser.tab.c"
+#line 1444 "parser.tab.c"
     break;
 
   case 8:
-#line 122 "parser.y"
+#line 90 "parser.y"
                                { counter = 1; }
-#line 1482 "parser.tab.c"
+#line 1450 "parser.tab.c"
     break;
 
   case 9:
-#line 127 "parser.y"
+#line 95 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
 	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 }
-#line 1491 "parser.tab.c"
+#line 1459 "parser.tab.c"
     break;
 
   case 10:
-#line 134 "parser.y"
+#line 102 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-3].identifier_name), (yyvsp[-1].value));
+	//$$->down = $3;
 	//add_to_symtable(symtable, $1, $3);
 	 	
 }
-#line 1501 "parser.tab.c"
+#line 1470 "parser.tab.c"
     break;
 
   case 12:
-#line 141 "parser.y"
+#line 110 "parser.y"
                  { (yyval.value) = get(symtable, (yyvsp[0].identifier_name)); }
-#line 1507 "parser.tab.c"
+#line 1476 "parser.tab.c"
     break;
 
   case 13:
-#line 142 "parser.y"
+#line 111 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) + (yyvsp[0].value); }
-#line 1513 "parser.tab.c"
+#line 1482 "parser.tab.c"
     break;
 
   case 14:
-#line 143 "parser.y"
+#line 112 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) - (yyvsp[0].value); }
-#line 1519 "parser.tab.c"
+#line 1488 "parser.tab.c"
     break;
 
   case 15:
-#line 144 "parser.y"
+#line 113 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) * (yyvsp[0].value); }
-#line 1525 "parser.tab.c"
+#line 1494 "parser.tab.c"
     break;
 
   case 16:
-#line 145 "parser.y"
+#line 114 "parser.y"
                     { (yyval.value) = (yyvsp[-2].value) / (yyvsp[0].value); }
-#line 1531 "parser.tab.c"
+#line 1500 "parser.tab.c"
     break;
 
   case 17:
-#line 146 "parser.y"
+#line 115 "parser.y"
                     { (yyval.value) = (yyvsp[-1].value); }
-#line 1537 "parser.tab.c"
+#line 1506 "parser.tab.c"
     break;
 
   case 18:
-#line 150 "parser.y"
+#line 119 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1546,11 +1515,11 @@ yyreduce:
 	(yyval.dst_ptr)->side = NULL;
 
 }
-#line 1550 "parser.tab.c"
+#line 1519 "parser.tab.c"
     break;
 
   case 29:
-#line 173 "parser.y"
+#line 142 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1558,47 +1527,47 @@ yyreduce:
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->side = NULL;
 }
-#line 1562 "parser.tab.c"
+#line 1531 "parser.tab.c"
     break;
 
   case 30:
-#line 182 "parser.y"
+#line 151 "parser.y"
                                 {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1568 "parser.tab.c"
+#line 1537 "parser.tab.c"
     break;
 
   case 31:
-#line 183 "parser.y"
+#line 152 "parser.y"
                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1574 "parser.tab.c"
+#line 1543 "parser.tab.c"
     break;
 
   case 32:
-#line 184 "parser.y"
+#line 153 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1580 "parser.tab.c"
+#line 1549 "parser.tab.c"
     break;
 
   case 33:
-#line 185 "parser.y"
+#line 154 "parser.y"
                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1586 "parser.tab.c"
+#line 1555 "parser.tab.c"
     break;
 
   case 34:
-#line 188 "parser.y"
+#line 157 "parser.y"
                                          { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1592 "parser.tab.c"
+#line 1561 "parser.tab.c"
     break;
 
   case 35:
-#line 189 "parser.y"
+#line 158 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
-#line 1598 "parser.tab.c"
+#line 1567 "parser.tab.c"
     break;
 
 
-#line 1602 "parser.tab.c"
+#line 1571 "parser.tab.c"
 
       default: break;
     }
@@ -1830,7 +1799,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 192 "parser.y"
+#line 161 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -2048,8 +2017,10 @@ int check_semantics(struct dst_node *dst){
 					}else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
-					statement_ptr = statement_ptr->side;
+					//statement_ptr = statement_ptr->side;
 				}
+				
+				statement_ptr = statement_ptr->side;
 			}
 		}
 		
