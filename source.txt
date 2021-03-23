@@ -3,9 +3,11 @@ func foo (arg x)
 	int s;
 	int q;
 	int l;
+	int m;
 	s = 45;
 	m = 2;
-	l = s + m*2;
+	l = 3;
+	q = s + m * l;
 )
 
 func mah (arg n, arg b)

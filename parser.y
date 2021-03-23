@@ -10,6 +10,8 @@
 	int number_of_args = 1;
 	int counter = 0;
 	char *mother_function;
+	char *current_identifier;
+	int current_value;
 	
 %}
 
@@ -104,19 +106,27 @@ variable_declaration: INT IDENTIFIER SC
 
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
+	current_identifier = $1;
+	//printf("current identifier is: %s\n", current_identifier);
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
+	$$->value = $$->down->value;
+	
+	printf("\ncurrent identifier is: %s\n", current_identifier);
+	printf("valueeee: %d\n",current_value);
+	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
 };
 
-expr: NUMBER  {$$ = new_dstnode_expr_number($1);}
-    | IDENTIFIER {$$ = new_dstnode_expr_identifier($1); }
-    | expr PLUS expr { $$ = new_dstnode_expr($1, $2, $3); }
-    | expr MINUS expr { $$ = new_dstnode_expr($1, $2, $3); }
-    | expr MULTIPLICATION expr { $$ = new_dstnode_expr($1, $2, $3); }
-    | expr DIVISION expr { $$ = new_dstnode_expr($1, $2, $3); }
-    | LPAR expr RPAR  { $$ = new_dstnode_expr($2, NULL, NULL); }
+
+expr: NUMBER  {$$ = new_dstnode_expr_number($1); current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
+    | IDENTIFIER {$$ = new_dstnode_expr_identifier($1, get_variable_value(variablenode, $1)); current_value = get_variable_value(variablenode, $1);}
+    | expr PLUS expr {current_value = $1->value + $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
+    | expr MINUS expr {current_value = $1->value - $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
+    | expr MULTIPLICATION expr {current_value = $1->value * $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
+    | expr DIVISION expr { current_value = $1->value / $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
+    | LPAR expr RPAR  {current_value = $2->value; $$ = new_dstnode_expr_pranthesis($2, current_value); }
 ;
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
@@ -231,13 +241,13 @@ struct dst_node* new_dstnode_expr_number(int val)
 
 }
 
-struct dst_node* new_dstnode_expr_identifier(char *n)
+struct dst_node* new_dstnode_expr_identifier(char *n, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = EXPRESSION;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
-	node->value = 0;
+	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
 	return node;
@@ -245,17 +255,27 @@ struct dst_node* new_dstnode_expr_identifier(char *n)
 }
 
 
-struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second)
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
-	node->name = "expression";
-	node->value = 0;
-	node->down = first;
-	node->down->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->down->side->name = (char *) malloc(strlen(n)+1);
-	strcpy(node->down->side->name,n);
-	node->down->side->side = second;
+	node = first;
+	node->value = val;
+	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->side->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->side->name,n);
+	node->side->side = second;
+	return node;
+
+}
+
+
+struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node = first;
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
 	return node;
 
 }
@@ -271,8 +291,7 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 	  
 	struct symbol_node  *last = *symtable;  
 	  
-	    /* 2. put in the data  */
-	new_node->arg_number = val;
+	new_node->value = val;
 	new_node->name = (char *) malloc(strlen(n)+1);
 	strcpy(new_node->name,n);
 	new_node->type = type;
@@ -296,25 +315,84 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 
 }
 
+
+void add_variable_value(struct variable_value_node **variablenode, char *n, int val){
+
+	
+
+	struct variable_value_node * new_node = (struct variable_value_node *) malloc(sizeof(struct variable_value_node)); 
+	 
+	struct variable_value_node  *last = *variablenode; 
+	  
+	new_node->value = val;
+	new_node->name = (char *) malloc(strlen(n)+1);
+	strcpy(new_node->name,n);
+	new_node->next = NULL; 
+	
+	if (*variablenode == NULL) 
+	{ 
+	   *variablenode = new_node; 
+	   return; 
+	} 
+	  
+	while (last->next != NULL) 
+		last = last->next; 
+	  
+	last->next = new_node; 
+	return; 
+
+
+}
+
+int get_variable_value(struct variable_value_node *head, char *n){
+
+	int value;
+	struct variable_value_node *current;
+	current = head;
+	
+	while(current != NULL){
+		if(strcmp(current->name,n) == 0){
+			return current->value;
+		}
+		current = current->next;
+	}
+	
+	//return error!
+}
+
 int get(struct symbol_node *head, char *n){
 	int value;
 	struct symbol_node *current;
 	current = head;
 	
 	while(current->next != NULL){
-		if(current->name == n){
-			return current->arg_number;
+		if(strcmp(current->name,n) == 0){
+			return current->value;
 		}
 		current = current->next;
 	}
 	
 	
-	
-	
-	
 	//return error!
 }
 
+
+/*void set(struct symbol_node *head, char *n, int val){
+
+	struct symbol_node *current;
+	current = head;
+
+	while(current->next != NULL){
+		if(strcmp(current->name,n) == 0){
+			current->value = val;
+			return;
+		}
+		current = current->next;
+	}
+	
+	
+	//return error!
+}*/
 
 int check_semantics(struct dst_node *dst){
 	
@@ -484,7 +562,7 @@ void print_symboltable(struct symbol_node *symtable){
 		
 		printf("Type: %s", getType_symtbale(current->type));
 		printf(", Name: %s", current->name);
-		printf(", Arg Number: %d", current->arg_number);
+		printf(", Value: %d", current->value);
 		printf(", Scope: %s\n", current->scope);
 		
 		current = current->next;
@@ -610,6 +688,10 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
 			break;
+		
+		//case EXPRESSION:
+			
+			
 			
 			
 	}

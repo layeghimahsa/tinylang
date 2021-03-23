@@ -25,13 +25,23 @@ struct symbol_node
 {
 	char *name; //function name or variable name
 	enum symbol_type type;
-	int arg_number; //for function
+	int value; //for function args or variable value
 	char *scope;
 	struct symbol_node *next;
 
 };
 
+struct symbol_node *symtable;
 
+struct variable_value_node
+{
+	char *name; //variable name
+	int value; //for function args or variable value
+	struct variable_value_node *next;
+
+};
+
+struct variable_value_node *variablenode;
 	
 //------------------------------------------------------------------------------
 
@@ -61,7 +71,7 @@ struct IR_node{
 //------------------------------------------------------------------------------
 	
 
-struct symbol_node *symtable;
+
 
 // prototypes
 struct dst_node* new_dstnode_variabledeclaration(char *n);
@@ -69,12 +79,14 @@ struct dst_node* new_dstnode_variableassignment(char *n);
 struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr);
 struct dst_node* new_program_dstnode();
 struct dst_node* new_dstnode_expr_number(int val);
-struct dst_node* new_dstnode_expr_identifier(char *n);
-struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second);
+struct dst_node* new_dstnode_expr_identifier(char *n, int val);
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val);
+struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val);
 int check_semantics(struct dst_node *dst);
 void print_dst(struct dst_node *dst);
 struct IR_node *generate_IR(struct dst_node *dst);
 int get(struct symbol_node *head, char *n);
+//void set(struct symbol_node *head, char *n, int val);
 char* getType(int i);
 void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, char *scope);
 void print_symboltable(struct symbol_node *symtable);
@@ -83,6 +95,9 @@ bool is_function_exists(struct symbol_node *symtable, char *n);
 bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope);
 int check_semantics(struct dst_node *dst);
 char *gen_label();
+
+void add_variable_value(struct variable_value_node **variablenode, char *n, int val);
+int get_variable_value(struct variable_value_node *head, char *n);
 
 #endif
 

@@ -79,9 +79,11 @@
 	int number_of_args = 1;
 	int counter = 0;
 	char *mother_function;
+	char *current_identifier;
+	int current_value;
 	
 
-#line 85 "parser.tab.c"
+#line 87 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -164,13 +166,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "parser.y"
+#line 32 "parser.y"
 
 	char *identifier_name;
 	int value; 
 	struct dst_node *dst_ptr;
 
-#line 174 "parser.tab.c"
+#line 176 "parser.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -548,10 +550,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    59,    59,    66,    67,    69,    75,    93,    94,    98,
-     105,   113,   114,   115,   116,   117,   118,   119,   122,   135,
-     136,   137,   138,   140,   141,   142,   143,   144,   145,   148,
-     158,   159,   160,   161,   164,   165
+       0,    61,    61,    68,    69,    71,    77,    95,    96,   100,
+     107,   123,   124,   125,   126,   127,   128,   129,   132,   145,
+     146,   147,   148,   150,   151,   152,   153,   154,   155,   158,
+     168,   169,   170,   171,   174,   175
 };
 #endif
 
@@ -1391,37 +1393,37 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 60 "parser.y"
+#line 62 "parser.y"
         {
 		dst = new_program_dstnode();
 		dst->down = (yyvsp[0].dst_ptr);
 	}
-#line 1400 "parser.tab.c"
+#line 1402 "parser.tab.c"
     break;
 
   case 3:
-#line 66 "parser.y"
+#line 68 "parser.y"
                                        {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1406 "parser.tab.c"
+#line 1408 "parser.tab.c"
     break;
 
   case 4:
-#line 67 "parser.y"
+#line 69 "parser.y"
                            {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1412 "parser.tab.c"
+#line 1414 "parser.tab.c"
     break;
 
   case 5:
-#line 70 "parser.y"
+#line 72 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
 }
-#line 1421 "parser.tab.c"
+#line 1423 "parser.tab.c"
     break;
 
   case 6:
-#line 76 "parser.y"
+#line 78 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = (yyvsp[-3].identifier_name);
@@ -1438,85 +1440,92 @@ yyreduce:
 	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 }
-#line 1442 "parser.tab.c"
+#line 1444 "parser.tab.c"
     break;
 
   case 7:
-#line 93 "parser.y"
+#line 95 "parser.y"
                                                   { number_of_args = number_of_args + counter;}
-#line 1448 "parser.tab.c"
+#line 1450 "parser.tab.c"
     break;
 
   case 8:
-#line 94 "parser.y"
+#line 96 "parser.y"
                                { counter = 1; }
-#line 1454 "parser.tab.c"
+#line 1456 "parser.tab.c"
     break;
 
   case 9:
-#line 99 "parser.y"
+#line 101 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
 	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 }
-#line 1463 "parser.tab.c"
+#line 1465 "parser.tab.c"
     break;
 
   case 10:
-#line 106 "parser.y"
+#line 108 "parser.y"
 {
+	current_identifier = (yyvsp[-3].identifier_name);
+	//printf("current identifier is: %s\n", current_identifier);
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-3].identifier_name));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
+	(yyval.dst_ptr)->value = (yyval.dst_ptr)->down->value;
+	
+	printf("\ncurrent identifier is: %s\n", current_identifier);
+	printf("valueeee: %d\n",current_value);
+	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
 }
-#line 1474 "parser.tab.c"
+#line 1483 "parser.tab.c"
     break;
 
   case 11:
-#line 113 "parser.y"
-              {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value));}
-#line 1480 "parser.tab.c"
+#line 123 "parser.y"
+              {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value)); current_value = (yyvsp[0].value);}
+#line 1489 "parser.tab.c"
     break;
 
   case 12:
-#line 114 "parser.y"
-                 {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name)); }
-#line 1486 "parser.tab.c"
+#line 124 "parser.y"
+                 {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name), get_variable_value(variablenode, (yyvsp[0].identifier_name))); current_value = get_variable_value(variablenode, (yyvsp[0].identifier_name));}
+#line 1495 "parser.tab.c"
     break;
 
   case 13:
-#line 115 "parser.y"
-                     { (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
-#line 1492 "parser.tab.c"
+#line 125 "parser.y"
+                     {current_value = (yyvsp[-2].dst_ptr)->value + (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
+#line 1501 "parser.tab.c"
     break;
 
   case 14:
-#line 116 "parser.y"
-                      { (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
-#line 1498 "parser.tab.c"
+#line 126 "parser.y"
+                      {current_value = (yyvsp[-2].dst_ptr)->value - (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
+#line 1507 "parser.tab.c"
     break;
 
   case 15:
-#line 117 "parser.y"
-                               { (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
-#line 1504 "parser.tab.c"
+#line 127 "parser.y"
+                               {current_value = (yyvsp[-2].dst_ptr)->value * (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
+#line 1513 "parser.tab.c"
     break;
 
   case 16:
-#line 118 "parser.y"
-                         { (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
-#line 1510 "parser.tab.c"
+#line 128 "parser.y"
+                         { current_value = (yyvsp[-2].dst_ptr)->value / (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
+#line 1519 "parser.tab.c"
     break;
 
   case 17:
-#line 119 "parser.y"
-                      { (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-1].dst_ptr), NULL, NULL); }
-#line 1516 "parser.tab.c"
+#line 129 "parser.y"
+                      {current_value = (yyvsp[-1].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr_pranthesis((yyvsp[-1].dst_ptr), current_value); }
+#line 1525 "parser.tab.c"
     break;
 
   case 18:
-#line 123 "parser.y"
+#line 133 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	(yyval.dst_ptr)->name = NULL;
@@ -1528,11 +1537,11 @@ yyreduce:
 	(yyval.dst_ptr)->side = (yyvsp[-1].dst_ptr);
 
 }
-#line 1532 "parser.tab.c"
+#line 1541 "parser.tab.c"
     break;
 
   case 29:
-#line 149 "parser.y"
+#line 159 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1540,47 +1549,47 @@ yyreduce:
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->side = NULL;
 }
-#line 1544 "parser.tab.c"
+#line 1553 "parser.tab.c"
     break;
 
   case 30:
-#line 158 "parser.y"
+#line 168 "parser.y"
                                 {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1550 "parser.tab.c"
+#line 1559 "parser.tab.c"
     break;
 
   case 31:
-#line 159 "parser.y"
+#line 169 "parser.y"
                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1556 "parser.tab.c"
+#line 1565 "parser.tab.c"
     break;
 
   case 32:
-#line 160 "parser.y"
+#line 170 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1562 "parser.tab.c"
+#line 1571 "parser.tab.c"
     break;
 
   case 33:
-#line 161 "parser.y"
+#line 171 "parser.y"
                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1568 "parser.tab.c"
+#line 1577 "parser.tab.c"
     break;
 
   case 34:
-#line 164 "parser.y"
+#line 174 "parser.y"
                                          { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1574 "parser.tab.c"
+#line 1583 "parser.tab.c"
     break;
 
   case 35:
-#line 165 "parser.y"
+#line 175 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
-#line 1580 "parser.tab.c"
+#line 1589 "parser.tab.c"
     break;
 
 
-#line 1584 "parser.tab.c"
+#line 1593 "parser.tab.c"
 
       default: break;
     }
@@ -1812,7 +1821,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 168 "parser.y"
+#line 178 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -1879,13 +1888,13 @@ struct dst_node* new_dstnode_expr_number(int val)
 
 }
 
-struct dst_node* new_dstnode_expr_identifier(char *n)
+struct dst_node* new_dstnode_expr_identifier(char *n, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = EXPRESSION;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
-	node->value = 0;
+	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
 	return node;
@@ -1893,17 +1902,27 @@ struct dst_node* new_dstnode_expr_identifier(char *n)
 }
 
 
-struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second)
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
-	node->name = "expression";
-	node->value = 0;
-	node->down = first;
-	node->down->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->down->side->name = (char *) malloc(strlen(n)+1);
-	strcpy(node->down->side->name,n);
-	node->down->side->side = second;
+	node = first;
+	node->value = val;
+	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->side->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->side->name,n);
+	node->side->side = second;
+	return node;
+
+}
+
+
+struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node = first;
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
 	return node;
 
 }
@@ -1919,8 +1938,7 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 	  
 	struct symbol_node  *last = *symtable;  
 	  
-	    /* 2. put in the data  */
-	new_node->arg_number = val;
+	new_node->value = val;
 	new_node->name = (char *) malloc(strlen(n)+1);
 	strcpy(new_node->name,n);
 	new_node->type = type;
@@ -1944,25 +1962,84 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 
 }
 
+
+void add_variable_value(struct variable_value_node **variablenode, char *n, int val){
+
+	
+
+	struct variable_value_node * new_node = (struct variable_value_node *) malloc(sizeof(struct variable_value_node)); 
+	 
+	struct variable_value_node  *last = *variablenode; 
+	  
+	new_node->value = val;
+	new_node->name = (char *) malloc(strlen(n)+1);
+	strcpy(new_node->name,n);
+	new_node->next = NULL; 
+	
+	if (*variablenode == NULL) 
+	{ 
+	   *variablenode = new_node; 
+	   return; 
+	} 
+	  
+	while (last->next != NULL) 
+		last = last->next; 
+	  
+	last->next = new_node; 
+	return; 
+
+
+}
+
+int get_variable_value(struct variable_value_node *head, char *n){
+
+	int value;
+	struct variable_value_node *current;
+	current = head;
+	
+	while(current != NULL){
+		if(strcmp(current->name,n) == 0){
+			return current->value;
+		}
+		current = current->next;
+	}
+	
+	//return error!
+}
+
 int get(struct symbol_node *head, char *n){
 	int value;
 	struct symbol_node *current;
 	current = head;
 	
 	while(current->next != NULL){
-		if(current->name == n){
-			return current->arg_number;
+		if(strcmp(current->name,n) == 0){
+			return current->value;
 		}
 		current = current->next;
 	}
 	
 	
-	
-	
-	
 	//return error!
 }
 
+
+/*void set(struct symbol_node *head, char *n, int val){
+
+	struct symbol_node *current;
+	current = head;
+
+	while(current->next != NULL){
+		if(strcmp(current->name,n) == 0){
+			current->value = val;
+			return;
+		}
+		current = current->next;
+	}
+	
+	
+	//return error!
+}*/
 
 int check_semantics(struct dst_node *dst){
 	
@@ -2132,7 +2209,7 @@ void print_symboltable(struct symbol_node *symtable){
 		
 		printf("Type: %s", getType_symtbale(current->type));
 		printf(", Name: %s", current->name);
-		printf(", Arg Number: %d", current->arg_number);
+		printf(", Value: %d", current->value);
 		printf(", Scope: %s\n", current->scope);
 		
 		current = current->next;
@@ -2258,6 +2335,10 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
 			break;
+		
+		//case EXPRESSION:
+			
+			
 			
 			
 	}
