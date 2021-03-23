@@ -20,11 +20,12 @@
 %type <dst_ptr> function_header
 %type <dst_ptr> function
 %type <dst_ptr> if_statement
+%type <dst_ptr> if_conditions
 %type <dst_ptr> else_statement
 %type <dst_ptr> program
 %type <dst_ptr> statement_list
 %type <dst_ptr> statement
-%type <value> expr
+%type <dst_ptr> expr
 
 %union{
 	char *identifier_name;
@@ -46,6 +47,9 @@
 %token MAIN
 %token ARG
 %token COMMENT
+%token <identifier_name> PLUS MINUS MULTIPLICATION DIVISION
+%left PLUS MINUS
+%left MULTIPLICATION DIVISION
 
 %start program
 
@@ -81,7 +85,7 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 	$$ = node;
 	
 	mother_function = $2; // This is used for variable scope
-	printf("\nmother function is: %s\n", mother_function);
+	//printf("\nmother function is: %s\n", mother_function);
 	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 };
@@ -100,28 +104,31 @@ variable_declaration: INT IDENTIFIER SC
 
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
-	$$ = new_dstnode_variableassignment($1, $3);
-	//$$->down = $3;
+	$$ = new_dstnode_variableassignment($1);
+	$$->down = $3;
 	//add_to_symtable(symtable, $1, $3);
 	 	
 };
 
-expr: NUMBER  
-    | IDENTIFIER { $$ = get(symtable, $1); }
-    | expr '+' expr { $$ = $1 + $3; }
-    | expr '-' expr { $$ = $1 - $3; }
-    | expr '*' expr { $$ = $1 * $3; }
-    | expr '/' expr { $$ = $1 / $3; }
-    | '(' expr ')'  { $$ = $2; }
+expr: NUMBER  {$$ = new_dstnode_expr_number($1);}
+    | IDENTIFIER {$$ = new_dstnode_expr_identifier($1); }
+    | expr PLUS expr { $$ = new_dstnode_expr($1, $2, $3); }
+    | expr MINUS expr { $$ = new_dstnode_expr($1, $2, $3); }
+    | expr MULTIPLICATION expr { $$ = new_dstnode_expr($1, $2, $3); }
+    | expr DIVISION expr { $$ = new_dstnode_expr($1, $2, $3); }
+    | LPAR expr RPAR  { $$ = new_dstnode_expr($2, NULL, NULL); }
 ;
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 {
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	$$->name = NULL;
 	$$->value = 0;
 	$$->type = IF_STATEMENT;
-	$$->down = $6;
+	$$->down = $3;
 	$$->side = NULL;
+	//($$->down)->side = $6;
+	$$->side = $6;
 
 };
 
@@ -154,7 +161,7 @@ statement: variable_declaration {$$ = $1;}
 	 | else_statement {$$ = $1;};
 	 
 
-statement_list: statement statement_list { $1->side = $2; $$ = $1; }//printf("\n statement listttttttt \n"); 
+statement_list: statement statement_list { $1->side = $2; $$ = $1; }
 		| { $$ = NULL;};
 
 
@@ -172,17 +179,18 @@ struct dst_node* new_dstnode_variabledeclaration(char *n)
 	return node;
 }
 
-struct dst_node* new_dstnode_variableassignment(char *n, int val)
+struct dst_node* new_dstnode_variableassignment(char *n)
 {	
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = VARIABLE_ASSIGNMENT; 
-	node->value = val;
+	node->value = 0;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
 	node->down = NULL;
 	node->side = NULL;
 	return node;
 }
+
 
 struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 {
@@ -210,27 +218,50 @@ struct dst_node* new_program_dstnode()
 	return node;
 }
 
-/*void add_to_symtable(struct symbol_node *head, char *n, int value, enum symbol_type type, int arg_num){
 
-	struct symbol_node *current;
-	current = head;
-	
-	while(current->next != NULL){
-		current = current->next;
-	}
-	
-	current->next = (symbol_node *) malloc(sizeof(symbol_node));
-	current->next->value = val;
-	current->next->name = (char *) malloc(strlen(n)+1);
-	strcpy(current->next->name,n);
-	current->next->TYPE = type;
-	current->next->arg_number = arg_num;
-	current->next->next = NULL;
-	return;
+struct dst_node* new_dstnode_expr_number(int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = EXPRESSION;
+	node->name = NULL;
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
 
-}*/
+}
+
+struct dst_node* new_dstnode_expr_identifier(char *n)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = EXPRESSION;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = 0;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
 
 
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = EXPRESSION;
+	node->name = "expression";
+	node->value = 0;
+	node->down = first;
+	node->down->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->down->side->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->down->side->name,n);
+	node->down->side->side = second;
+	return node;
+
+}
+
+
+//--------------------------------------------------------------------------------------------------------------------------
 
 void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, char *scope){
 
@@ -262,37 +293,6 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 	last->next = new_node; 
 	return; 
 
-	
-	/*if(symtable == NULL){
-		symtable = (struct symbol_node *) malloc(sizeof(struct symbol_node));
-		symtable->arg_number = val;
-		symtable->name = (char *) malloc(strlen(n)+1);
-		strcpy(symtable->name,n);
-		symtable->type = type;
-		symtable->scope = (char *) malloc(strlen(scope)+1);
-		strcpy(symtable->scope,scope);
-		symtable->next = NULL;
-		printf("the name is %s form add_to_sym \n", symtable->name);
-		return;
-	}
-	
-	while(symtable->next != NULL){
-		symtable = symtable->next;
-	}
-	
-	symtable->next = (struct symbol_node *) malloc(sizeof(struct symbol_node));
-	symtable->next->arg_number = val;
-	symtable->next->name = (char *) malloc(strlen(n)+1);
-	strcpy(symtable->next->name,n);
-	symtable->next->type = type;
-	symtable->next->scope = (char *) malloc(strlen(scope)+1);
-	strcpy(symtable->next->scope,scope);
-	symtable->next->next = NULL;
-	
-	printf("the name is %s form add_to_sym (not first)\n", symtable->next->name);
-	
-	return;*/
-	
 
 }
 
@@ -403,7 +403,7 @@ void print_dst(struct dst_node *dst){
 		return;
 	}
 	
-	printf("name: %s\n", temp->name);
+	printf("\nname: %s\n", temp->name);
 	printf("|\n");
 	printf("∨\n");
 	func_ptr = temp->down;
@@ -545,10 +545,10 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
 }
 
 
-/*struct IR_node *generate_IR(struct dst_node *dst){
+struct IR_node *generate_IR(struct dst_node *dst){
 	
 	//If we reached a NULL node, just return NULL as well
-	if(dst == (struct dst_node *)0){
+	if(dst == NULL){
 		return (struct IR_node *)0;
 	}
 
@@ -560,7 +560,7 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
 	//should have a switch-case for every type of dst node
 	switch(dst->type)
 	{
-		case VARIABLE_ASSIGNMENT:
+		case VARIABLE_ASSIGNMENT: ;
 			struct IR_node *new_IR_node = generate_IR(dst->down);
 			struct IR_node *last_node = new_IR_node;
 			while(last_node->next != (struct IR_node *)0)
@@ -568,14 +568,66 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
 			last_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node = last_node->next;
 			last_node->instruction = POP;
-			last_node->operand_type = IDENTIFER;
+			last_node->operand_type = IDENTIFIERS;
 			last_node->p_code_operand.identifier = strdup(dst->name);
 			last_node->next = generate_IR(dst->side);
 			return new_IR_node;
-		break;
+			break;
+		/*case VARIABLE_DECLARATION:
+			struct IR_node *new_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			struct IR_node *last_node = new_IR_node;
+			while(last_node->next != (struct IR_node *)0)
+				last_node = last_node->next;
+			last_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node = last_node->next;
+			last_node->instruction = POP;
+			last_node->operand_type = IDENTIFIERS;
+			last_node->p_code_operand.identifier = strdup(dst->name);
+			last_node->next = generate_IR(dst->side);
+			return new_IR_node;
+			break;*/
+			
+		case IF_STATEMENT: ;
+			char *label_if_begin = gen_label();
+			char *label_if_end = gen_label();
+			struct IR_node *new_IF_condition_IR_node = generate_IR(dst->down); //p-code for if condition
+			new_IF_condition_IR_node->label = label_if_begin;
+			struct IR_node *last_node_IF = new_IF_condition_IR_node;
+			while(last_node_IF->next != NULL)
+				last_node_IF = last_node_IF->next;
+			last_node_IF->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_IF = last_node_IF->next;
+			last_node_IF->instruction = BRCF;
+			last_node_IF->operand_type = IDENTIFIERS;
+			last_node_IF->p_code_operand.identifier = label_if_end;
+			last_node_IF->next = generate_IR(dst->side); //p-code for if body
+			struct IR_node *last_node_IF_body = last_node_IF->next;
+			while(last_node_IF_body->next != NULL)
+				last_node_IF_body = last_node_IF_body->next;
+			last_node_IF_body->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_IF_body = last_node_IF_body->next;
+			last_node_IF_body->instruction = NOP;
+			last_node_IF_body->operand_type = REGISTER;
+			last_node_IF_body->p_code_operand.p_register = PC;
+			break;
+			
+			
 	}
 
-}*/
+}
+
+
+//label generation function
+char *gen_label()
+{
+	static int label_counter = 0;
+	//asssuming here we just need up to 999 labels
+	char *new_label = (char *) malloc(5);
+	sprintf(new_label, "L%d", label_counter);
+	label_counter++;
+	return new_label;
+
+}
 
 void yyerror(char *s){ fprintf(stderr, " %s\n", s); }
 

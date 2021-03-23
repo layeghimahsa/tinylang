@@ -4,6 +4,8 @@ func foo (arg x)
 	int q;
 	int l;
 	s = 45;
+	m = 2;
+	l = s + m*2;
 )
 
 func mah (arg n, arg b)

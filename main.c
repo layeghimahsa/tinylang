@@ -28,8 +28,8 @@ int main(int argc, char *argv[]){
 	//printf("Now it comes to symtable\n");
 	//print_symboltable(symtable);
 
-	printf("------------------------------------------------\n");
-	printf("Now it comes to check_semantics\n");
+	//printf("------------------------------------------------\n");
+	//printf("Now it comes to check_semantics\n");
 	
 	//semantic analysis to check validity of code
 	
@@ -42,5 +42,5 @@ int main(int argc, char *argv[]){
 	}
 	
 	
-	print_symboltable(symtable);
+	//print_symboltable(symtable);
 }
