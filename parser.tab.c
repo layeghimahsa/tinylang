@@ -153,12 +153,13 @@ extern int yydebug;
     IF = 277,
     ELSE = 278,
     MAIN = 279,
-    ARG = 280,
-    COMMENT = 281,
-    PLUS = 282,
-    MINUS = 283,
-    MULTIPLICATION = 284,
-    DIVISION = 285
+    VOID = 280,
+    ARG = 281,
+    COMMENT = 282,
+    PLUS = 283,
+    MINUS = 284,
+    MULTIPLICATION = 285,
+    DIVISION = 286
   };
 #endif
 
@@ -166,13 +167,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 32 "parser.y"
+#line 33 "parser.y"
 
 	char *identifier_name;
 	int value; 
 	struct dst_node *dst_ptr;
 
-#line 176 "parser.tab.c"
+#line 177 "parser.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -491,19 +492,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  7
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   75
+#define YYLAST   90
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  31
+#define YYNTOKENS  32
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  15
+#define YYNNTS  17
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  35
+#define YYNRULES  43
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  82
+#define YYNSTATES  93
 
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   285
+#define YYMAXUTOK   286
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -543,17 +544,18 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30
+      25,    26,    27,    28,    29,    30,    31
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    61,    61,    68,    69,    71,    77,    95,    96,   100,
-     107,   123,   124,   125,   126,   127,   128,   129,   132,   145,
-     146,   147,   148,   150,   151,   152,   153,   154,   155,   158,
-     168,   169,   170,   171,   174,   175
+       0,    62,    62,    69,    70,    72,    78,    96,    97,    98,
+     102,   109,   126,   137,   138,   139,   140,   141,   142,   143,
+     144,   146,   159,   160,   161,   162,   164,   165,   166,   167,
+     168,   169,   172,   182,   183,   184,   185,   186,   189,   190,
+     192,   199,   200,   201
 };
 #endif
 
@@ -565,11 +567,12 @@ static const char *const yytname[] =
   "$end", "error", "$undefined", "NUMBER", "IDENTIFIER", "LPAR", "RPAR",
   "INT", "FUNC", "SC", "COMMA", "ASSIGNMENT", "EQUAL", "INEQUAL",
   "GREATER", "LESS", "GREATEREQUAL", "LESSEQUAL", "AND", "OR", "NOT",
-  "RETURN", "IF", "ELSE", "MAIN", "ARG", "COMMENT", "PLUS", "MINUS",
-  "MULTIPLICATION", "DIVISION", "$accept", "program", "function_list",
-  "function", "function_header", "function_args", "variable_declaration",
-  "variable_assignment", "expr", "if_statement", "if_conditions",
-  "if_condition", "else_statement", "statement", "statement_list", YY_NULLPTR
+  "RETURN", "IF", "ELSE", "MAIN", "VOID", "ARG", "COMMENT", "PLUS",
+  "MINUS", "MULTIPLICATION", "DIVISION", "$accept", "program",
+  "function_list", "function", "function_header", "function_args",
+  "variable_declaration", "variable_assignment", "expr", "if_statement",
+  "if_conditions", "if_condition", "else_statement", "statement",
+  "statement_list", "function_call", "params", YY_NULLPTR
 };
 #endif
 
@@ -581,11 +584,11 @@ static const yytype_int16 yytoknum[] =
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285
+     285,   286
 };
 # endif
 
-#define YYPACT_NINF (-58)
+#define YYPACT_NINF (-38)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -599,15 +602,16 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      24,     2,    40,   -58,    24,    36,    37,   -58,   -58,    -2,
-      18,    33,    45,    46,    47,   -58,   -58,   -58,   -58,    -2,
-      44,    49,    50,     9,    48,    11,    -2,   -58,   -58,    51,
-     -58,   -58,   -58,     9,    -1,   -58,    22,    54,    55,    53,
-     -58,    56,    18,    -5,   -58,     9,     9,     9,     9,    52,
-      60,    61,    62,    63,    64,    65,    54,    67,   -58,   -58,
-     -58,   -20,   -20,   -58,   -58,   -58,   -58,   -58,   -58,   -58,
-     -58,   -15,    68,    -2,    11,    11,    11,    69,   -58,   -58,
-     -58,   -58
+       7,    49,    54,   -38,     7,     2,    50,   -38,   -38,    -1,
+     -21,     3,    52,    53,    55,   -38,   -38,   -38,   -38,    -1,
+      51,   -38,   -38,    57,    56,     8,    32,    58,    12,    -1,
+     -38,   -38,    59,   -38,    60,   -38,    62,   -38,    66,    32,
+       0,   -38,   -38,    30,    61,    67,    68,   -38,    70,   -21,
+       8,    64,    -4,   -38,    32,    32,    32,    32,    74,    75,
+      76,    77,    78,    79,    80,    61,    82,   -38,   -38,   -38,
+     -38,   -38,   -12,   -12,   -38,   -38,   -38,   -38,   -38,   -38,
+     -38,   -38,    33,    83,    -1,    12,    12,    12,    84,   -38,
+     -38,   -38,   -38
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -615,29 +619,30 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     2,     4,     0,     0,     1,     3,    35,
-       0,     0,     0,     0,     0,    30,    31,    32,    33,    35,
-       0,     0,     0,     0,     0,     0,    35,    34,     5,     8,
-       6,    11,    12,     0,     0,     9,     0,     0,     0,     0,
-      19,     0,     0,     0,    10,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,    29,     7,
-      17,    13,    14,    15,    16,    23,    24,    25,    26,    27,
-      28,     0,     0,    35,     0,     0,     0,     0,    20,    21,
-      22,    18
+       0,     0,     0,     2,     4,     0,     0,     1,     3,    39,
+       0,     0,     0,     0,     0,    33,    34,    35,    36,    39,
+       0,    37,     9,     0,     0,     0,     0,     0,     0,    39,
+      38,     5,     8,     6,    42,    43,     0,    13,    14,     0,
+      12,    20,    10,     0,     0,     0,     0,    22,     0,     0,
+       0,     0,     0,    11,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    32,     7,    41,
+      40,    19,    15,    16,    17,    18,    26,    27,    28,    29,
+      30,    31,     0,     0,    39,     0,     0,     0,     0,    23,
+      24,    25,    21
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -58,   -58,    66,   -58,   -58,    26,   -58,   -58,     0,   -58,
-     -57,   -26,   -58,   -58,   -19
+     -38,   -38,    81,   -38,   -38,    10,   -38,   -38,   -16,   -38,
+     -37,   -31,   -38,   -38,   -18,    -9,    13
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     3,     4,     5,    22,    15,    16,    34,    17,
-      39,    40,    18,    19,    20
+      -1,     2,     3,     4,     5,    24,    15,    16,    40,    17,
+      46,    47,    18,    19,    20,    41,    36
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -645,59 +650,66 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      27,    60,    11,    74,    75,    12,     6,    41,    44,    47,
-      48,    55,    31,    32,    33,    36,    37,    78,    79,    80,
-      13,    14,    45,    46,    47,    48,    45,    46,    47,    48,
-      72,    38,     1,    43,    49,    50,    51,    52,    53,    54,
-       7,     9,    10,    21,    23,    61,    62,    63,    64,    24,
-      28,    25,    26,    29,    77,    65,    30,    35,    36,    57,
-      56,    42,    58,    66,    67,    68,    69,    70,    59,     0,
-       8,    71,    73,     0,    76,    81
+      21,    30,    71,    11,    22,    23,    12,     9,    25,    53,
+      21,    48,    34,    64,    26,     1,    43,    44,    56,    57,
+      21,    13,    14,    52,    54,    55,    56,    57,    54,    55,
+      56,    57,    45,    35,    83,    37,    38,    39,    72,    73,
+      74,    75,    58,    59,    60,    61,    62,    63,    89,    90,
+      91,    85,    86,     6,     7,    10,    27,    31,    28,    68,
+      29,    32,    33,    69,     0,    43,    88,    42,    51,    49,
+      50,    25,    65,    70,    66,    21,    67,    76,    77,    78,
+      79,    80,    81,     0,     0,     8,    82,    84,     0,    87,
+      92
 };
 
 static const yytype_int8 yycheck[] =
 {
-      19,     6,     4,    18,    19,     7,     4,    26,     9,    29,
-      30,    37,     3,     4,     5,     4,     5,    74,    75,    76,
-      22,    23,    27,    28,    29,    30,    27,    28,    29,    30,
-      56,    20,     8,    33,    12,    13,    14,    15,    16,    17,
-       0,     5,     5,    25,    11,    45,    46,    47,    48,     4,
-       6,     5,     5,     4,    73,     3,     6,     9,     4,     6,
-       5,    10,     6,     3,     3,     3,     3,     3,    42,    -1,
-       4,     6,     5,    -1,     6,     6
+       9,    19,     6,     4,    25,    26,     7,     5,     5,     9,
+      19,    29,     4,    44,    11,     8,     4,     5,    30,    31,
+      29,    22,    23,    39,    28,    29,    30,    31,    28,    29,
+      30,    31,    20,    25,    65,     3,     4,     5,    54,    55,
+      56,    57,    12,    13,    14,    15,    16,    17,    85,    86,
+      87,    18,    19,     4,     0,     5,     4,     6,     5,    49,
+       5,     4,     6,    50,    -1,     4,    84,     9,     6,    10,
+      10,     5,     5,     9,     6,    84,     6,     3,     3,     3,
+       3,     3,     3,    -1,    -1,     4,     6,     5,    -1,     6,
+       6
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     8,    32,    33,    34,    35,     4,     0,    33,     5,
-       5,     4,     7,    22,    23,    37,    38,    40,    43,    44,
-      45,    25,    36,    11,     4,     5,     5,    45,     6,     4,
-       6,     3,     4,     5,    39,     9,     4,     5,    20,    41,
-      42,    45,    10,    39,     9,    27,    28,    29,    30,    12,
-      13,    14,    15,    16,    17,    42,     5,     6,     6,    36,
-       6,    39,    39,    39,    39,     3,     3,     3,     3,     3,
-       3,     6,    42,     5,    18,    19,     6,    45,    41,    41,
-      41,     6
+       0,     8,    33,    34,    35,    36,     4,     0,    34,     5,
+       5,     4,     7,    22,    23,    38,    39,    41,    44,    45,
+      46,    47,    25,    26,    37,     5,    11,     4,     5,     5,
+      46,     6,     4,     6,     4,    25,    48,     3,     4,     5,
+      40,    47,     9,     4,     5,    20,    42,    43,    46,    10,
+      10,     6,    40,     9,    28,    29,    30,    31,    12,    13,
+      14,    15,    16,    17,    43,     5,     6,     6,    37,    48,
+       9,     6,    40,    40,    40,    40,     3,     3,     3,     3,
+       3,     3,     6,    43,     5,    18,    19,     6,    46,    42,
+      42,    42,     6
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    31,    32,    33,    33,    34,    35,    36,    36,    37,
-      38,    39,    39,    39,    39,    39,    39,    39,    40,    41,
-      41,    41,    41,    42,    42,    42,    42,    42,    42,    43,
-      44,    44,    44,    44,    45,    45
+       0,    32,    33,    34,    34,    35,    36,    37,    37,    37,
+      38,    39,    39,    40,    40,    40,    40,    40,    40,    40,
+      40,    41,    42,    42,    42,    42,    43,    43,    43,    43,
+      43,    43,    44,    45,    45,    45,    45,    45,    46,    46,
+      47,    48,    48,    48
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     4,     5,     4,     2,     3,
-       4,     1,     1,     3,     3,     3,     3,     3,     7,     1,
-       5,     5,     5,     3,     3,     3,     3,     3,     3,     4,
-       1,     1,     1,     1,     2,     0
+       0,     2,     1,     2,     1,     4,     5,     4,     2,     1,
+       3,     4,     3,     1,     1,     3,     3,     3,     3,     3,
+       1,     7,     1,     5,     5,     5,     3,     3,     3,     3,
+       3,     3,     4,     1,     1,     1,     1,     1,     2,     0,
+       5,     3,     1,     1
 };
 
 
@@ -1393,37 +1405,37 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 62 "parser.y"
+#line 63 "parser.y"
         {
 		dst = new_program_dstnode();
 		dst->down = (yyvsp[0].dst_ptr);
 	}
-#line 1402 "parser.tab.c"
-    break;
-
-  case 3:
-#line 68 "parser.y"
-                                       {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1408 "parser.tab.c"
-    break;
-
-  case 4:
-#line 69 "parser.y"
-                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
 #line 1414 "parser.tab.c"
     break;
 
+  case 3:
+#line 69 "parser.y"
+                                       {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
+#line 1420 "parser.tab.c"
+    break;
+
+  case 4:
+#line 70 "parser.y"
+                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1426 "parser.tab.c"
+    break;
+
   case 5:
-#line 72 "parser.y"
+#line 73 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
 }
-#line 1423 "parser.tab.c"
+#line 1435 "parser.tab.c"
     break;
 
   case 6:
-#line 78 "parser.y"
+#line 79 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = (yyvsp[-3].identifier_name);
@@ -1431,7 +1443,7 @@ yyreduce:
 	node->type = FUNCTION_HEADER;
 	node->down = NULL;
 	node->side = NULL;
-	number_of_args = 1;
+	number_of_args = 1; //make this 0 to see what will happen!!!!!!!!!!!!!!!!!!!!!!!!!! , (tested) result-> it seems it should be 1
 	counter = 0;
 	(yyval.dst_ptr) = node;
 	
@@ -1440,38 +1452,48 @@ yyreduce:
 	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
 }
-#line 1444 "parser.tab.c"
-    break;
-
-  case 7:
-#line 95 "parser.y"
-                                                  { number_of_args = number_of_args + counter;}
-#line 1450 "parser.tab.c"
-    break;
-
-  case 8:
-#line 96 "parser.y"
-                               { counter = 1; }
 #line 1456 "parser.tab.c"
     break;
 
+  case 7:
+#line 96 "parser.y"
+                                                  { number_of_args = number_of_args + counter;}
+#line 1462 "parser.tab.c"
+    break;
+
+  case 8:
+#line 97 "parser.y"
+                               { counter = 1; }
+#line 1468 "parser.tab.c"
+    break;
+
   case 9:
-#line 101 "parser.y"
+#line 98 "parser.y"
+                    {number_of_args = 0;}
+#line 1474 "parser.tab.c"
+    break;
+
+  case 10:
+#line 103 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
 	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 }
-#line 1465 "parser.tab.c"
+#line 1483 "parser.tab.c"
     break;
 
-  case 10:
-#line 108 "parser.y"
+  case 11:
+#line 110 "parser.y"
 {
 	current_identifier = (yyvsp[-3].identifier_name);
-	//printf("current identifier is: %s\n", current_identifier);
+	printf("000000000000000000000\n");
+	printf("current identifier is: %s\n", current_identifier);
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-3].identifier_name));
+	printf("1111111111111\n");
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
+	printf("222222222222\n");
 	(yyval.dst_ptr)->value = (yyval.dst_ptr)->down->value;
+	printf("333333333333333\n");
 	
 	printf("\ncurrent identifier is: %s\n", current_identifier);
 	printf("valueeee: %d\n",current_value);
@@ -1479,53 +1501,72 @@ yyreduce:
 	//add_to_symtable(symtable, $1, $3);
 	 	
 }
-#line 1483 "parser.tab.c"
-    break;
-
-  case 11:
-#line 123 "parser.y"
-              {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value)); current_value = (yyvsp[0].value);}
-#line 1489 "parser.tab.c"
+#line 1505 "parser.tab.c"
     break;
 
   case 12:
-#line 124 "parser.y"
-                 {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name), get_variable_value(variablenode, (yyvsp[0].identifier_name))); current_value = get_variable_value(variablenode, (yyvsp[0].identifier_name));}
-#line 1495 "parser.tab.c"
+#line 127 "parser.y"
+{ 
+	current_identifier = (yyvsp[-2].identifier_name);
+	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-2].identifier_name));
+	(yyval.dst_ptr)->down = (yyvsp[0].dst_ptr);
+	(yyval.dst_ptr)->value = (yyval.dst_ptr)->down->value;
+	add_variable_value(&variablenode, current_identifier, current_value);
+	//add_to_symtable(symtable, $1, $3);
+}
+#line 1518 "parser.tab.c"
     break;
 
   case 13:
-#line 125 "parser.y"
-                     {current_value = (yyvsp[-2].dst_ptr)->value + (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
-#line 1501 "parser.tab.c"
+#line 137 "parser.y"
+              {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value)); (yyval.dst_ptr)->name = current_identifier; current_value = (yyvsp[0].value);}
+#line 1524 "parser.tab.c"
     break;
 
   case 14:
-#line 126 "parser.y"
-                      {current_value = (yyvsp[-2].dst_ptr)->value - (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
-#line 1507 "parser.tab.c"
+#line 138 "parser.y"
+                 {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name), get_variable_value(variablenode, (yyvsp[0].identifier_name))); current_value = get_variable_value(variablenode, (yyvsp[0].identifier_name));}
+#line 1530 "parser.tab.c"
     break;
 
   case 15:
-#line 127 "parser.y"
-                               {current_value = (yyvsp[-2].dst_ptr)->value * (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
-#line 1513 "parser.tab.c"
+#line 139 "parser.y"
+                     {current_value = (yyvsp[-2].dst_ptr)->value + (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
+#line 1536 "parser.tab.c"
     break;
 
   case 16:
-#line 128 "parser.y"
-                         { current_value = (yyvsp[-2].dst_ptr)->value / (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
-#line 1519 "parser.tab.c"
+#line 140 "parser.y"
+                      {current_value = (yyvsp[-2].dst_ptr)->value - (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
+#line 1542 "parser.tab.c"
     break;
 
   case 17:
-#line 129 "parser.y"
-                      {current_value = (yyvsp[-1].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr_pranthesis((yyvsp[-1].dst_ptr), current_value); }
-#line 1525 "parser.tab.c"
+#line 141 "parser.y"
+                               {current_value = (yyvsp[-2].dst_ptr)->value * (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
+#line 1548 "parser.tab.c"
     break;
 
   case 18:
-#line 133 "parser.y"
+#line 142 "parser.y"
+                         { current_value = (yyvsp[-2].dst_ptr)->value / (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
+#line 1554 "parser.tab.c"
+    break;
+
+  case 19:
+#line 143 "parser.y"
+                      {current_value = (yyvsp[-1].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr_pranthesis((yyvsp[-1].dst_ptr), current_value); }
+#line 1560 "parser.tab.c"
+    break;
+
+  case 20:
+#line 144 "parser.y"
+                    {(yyval.dst_ptr) = new_dstnode_expr_functioncall((yyvsp[0].dst_ptr)->name, (yyvsp[0].dst_ptr)->value); current_value = (yyval.dst_ptr)->value;}
+#line 1566 "parser.tab.c"
+    break;
+
+  case 21:
+#line 147 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	(yyval.dst_ptr)->name = NULL;
@@ -1537,11 +1578,11 @@ yyreduce:
 	(yyval.dst_ptr)->side = (yyvsp[-1].dst_ptr);
 
 }
-#line 1541 "parser.tab.c"
+#line 1582 "parser.tab.c"
     break;
 
-  case 29:
-#line 159 "parser.y"
+  case 32:
+#line 173 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1549,47 +1590,82 @@ yyreduce:
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->side = NULL;
 }
-#line 1553 "parser.tab.c"
-    break;
-
-  case 30:
-#line 168 "parser.y"
-                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1559 "parser.tab.c"
-    break;
-
-  case 31:
-#line 169 "parser.y"
-                               {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1565 "parser.tab.c"
-    break;
-
-  case 32:
-#line 170 "parser.y"
-                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1571 "parser.tab.c"
+#line 1594 "parser.tab.c"
     break;
 
   case 33:
-#line 171 "parser.y"
-                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1577 "parser.tab.c"
+#line 182 "parser.y"
+                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1600 "parser.tab.c"
     break;
 
   case 34:
-#line 174 "parser.y"
-                                         { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1583 "parser.tab.c"
+#line 183 "parser.y"
+                               {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1606 "parser.tab.c"
     break;
 
   case 35:
-#line 175 "parser.y"
+#line 184 "parser.y"
+                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1612 "parser.tab.c"
+    break;
+
+  case 36:
+#line 185 "parser.y"
+                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1618 "parser.tab.c"
+    break;
+
+  case 37:
+#line 186 "parser.y"
+                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
+#line 1624 "parser.tab.c"
+    break;
+
+  case 38:
+#line 189 "parser.y"
+                                         { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
+#line 1630 "parser.tab.c"
+    break;
+
+  case 39:
+#line 190 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
-#line 1589 "parser.tab.c"
+#line 1636 "parser.tab.c"
+    break;
+
+  case 40:
+#line 192 "parser.y"
+                                              {
+			printf("\ndetecting function call\n");
+			(yyval.dst_ptr) = new_dstnode_functioncall((yyvsp[-4].identifier_name), number_of_args);
+			number_of_args = 1; 
+			counter = 0;
+		}
+#line 1647 "parser.tab.c"
+    break;
+
+  case 41:
+#line 199 "parser.y"
+                                { number_of_args = number_of_args + counter;}
+#line 1653 "parser.tab.c"
+    break;
+
+  case 42:
+#line 200 "parser.y"
+                      { counter = 1; }
+#line 1659 "parser.tab.c"
+    break;
+
+  case 43:
+#line 201 "parser.y"
+               {number_of_args = 0;}
+#line 1665 "parser.tab.c"
     break;
 
 
-#line 1593 "parser.tab.c"
+#line 1669 "parser.tab.c"
 
       default: break;
     }
@@ -1821,7 +1897,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 178 "parser.y"
+#line 205 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -1867,7 +1943,7 @@ struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 struct dst_node* new_program_dstnode()
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->name = "program";
+	node->name = "main"; // I changed form "program" to "main" for IR generation purpose
 	node->value = 0;
 	node->type = PROGRAM;
 	node->down = NULL;
@@ -1879,7 +1955,7 @@ struct dst_node* new_program_dstnode()
 struct dst_node* new_dstnode_expr_number(int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
+	node->type = EXPRESSION_NUMBER;
 	node->name = NULL;
 	node->value = val;
 	node->down = NULL;
@@ -1891,7 +1967,7 @@ struct dst_node* new_dstnode_expr_number(int val)
 struct dst_node* new_dstnode_expr_identifier(char *n, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
+	node->type = EXPRESSION_IDENTIFIER;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
 	node->value = val;
@@ -1923,6 +1999,35 @@ struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val)
 	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
+	return node;
+
+}
+
+struct dst_node* new_dstnode_expr_functioncall(char *n, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = EXPRESSION_FUNCTIONCALL;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
+
+
+struct dst_node* new_dstnode_functioncall(char *n, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = FUNCTION_CALL;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	//printf("\n name: %s\n",node->name);
+	//printf("value: %d\n",node->value);
 	return node;
 
 }
@@ -2177,17 +2282,32 @@ char* getType(int i){
 		name = "FUNCTION";
 		break;
 	case 3: 
-		name = "VARIABLE_DECLARATION";
+		name = "FUNCTION_CALL";
 		break;
 	case 4: 
-		name = "VARIABLE_ASSIGNMENT";
+		name = "VARIABLE_DECLARATION";
 		break;
 	case 5: 
-		name = "IF_STATEMENT";
+		name = "VARIABLE_ASSIGNMENT";
 		break;
 	case 6: 
+		name = "IF_STATEMENT";
+		break;
+	case 7: 
 		name = "ELSE_STATEMENT";
-		break;						
+		break;	
+	case 8: 
+		name = "EXPRESSION";
+		break;	
+	case 9: 
+		name = "EXPRESSION_NUMBER";
+		break;	
+	case 10: 
+		name = "EXPRESSION_IDENTIFIER";
+		break;	
+	case 11:
+		name = "EXPRESSION_FUNCTIONCALL";
+		break;					
 	default: 
 		break;	
 		
@@ -2272,19 +2392,44 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
 
 struct IR_node *generate_IR(struct dst_node *dst){
 	
-	//If we reached a NULL node, just return NULL as well
+
 	if(dst == NULL){
-		return (struct IR_node *)0;
+		return NULL;
 	}
 
 	if(dst->type == PROGRAM){
-		return generate_IR(dst->down);
+		printf("in program case.\n");
+		struct IR_node *new_prog_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+		new_prog_IR_node->instruction = CALL;
+		new_prog_IR_node->operand_type = IDENTIFIERS;
+		new_prog_IR_node->p_code_operand.identifier = dst->name;
+		new_prog_IR_node->next = generate_IR(dst->down);
+		return new_prog_IR_node;
 	}
 	
 	
 	//should have a switch-case for every type of dst node
 	switch(dst->type)
 	{
+	
+		case FUNCTION: ;//this should be changed to function call later
+			printf("in function case.\n");
+			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_call_IR_node->instruction = CALL;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->name;
+			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
+			break;
+		
+		case RETURN: ;//this should be added and definitely be changed.
+			struct IR_node *new_func_ret_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_ret_IR_node->instruction = RET;
+			new_func_ret_IR_node->operand_type = CONSTANT;
+			new_func_ret_IR_node->p_code_operand.constant = dst->value;
+			break;
+			
+			
+			
 		case VARIABLE_ASSIGNMENT: ;
 			struct IR_node *new_IR_node = generate_IR(dst->down);
 			struct IR_node *last_node = new_IR_node;
@@ -2335,12 +2480,96 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
 			break;
-		
-		//case EXPRESSION:
+			
+		case ELSE_STATEMENT: ;
+			struct IR_node *new_else_IR_node = generate_IR(dst->down); //p-code for else body
+			break;
 			
 			
+		case EXPRESSION: ;
+			
+			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side->side); //p-code for first expression result
+			struct IR_node *last_node_fisrt_expr = new_first_expr_IR_node;
+			while(last_node_fisrt_expr->next != NULL)
+				last_node_fisrt_expr = last_node_fisrt_expr->next;
+			last_node_fisrt_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_expr = last_node_fisrt_expr->next;
+			last_node_fisrt_expr->instruction = PUSH;
+			last_node_fisrt_expr->operand_type = CONSTANT;
+			last_node_fisrt_expr->p_code_operand.constant = dst->side->side->value;
+			
+			struct IR_node *new_second_expr_IR_node = generate_IR(dst); //p-code for second expression result
+			struct IR_node *last_node_second_expr = new_second_expr_IR_node;
+			while(last_node_second_expr->next != NULL)
+				last_node_second_expr = last_node_second_expr->next;
+			last_node_second_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_expr = last_node_second_expr->next;
+			last_node_second_expr->instruction = PUSH;
+			last_node_second_expr->operand_type = CONSTANT;
+			last_node_second_expr->p_code_operand.constant = dst->value;
+			
+			last_node_fisrt_expr->next = last_node_second_expr;
+			struct IR_node *new_operation_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_expr->next = new_operation_IR_node;
 			
 			
+			if(strcmp(dst->side->name,"PLUS") == 0){
+				new_operation_IR_node->instruction = ADD;
+			} else if(strcmp(dst->side->name,"MINUS") == 0){
+				new_operation_IR_node->instruction = SUB;
+			} else if(strcmp(dst->side->name,"MULTIPLICATION") == 0){
+				new_operation_IR_node->instruction = MUL;
+			} else if(strcmp(dst->side->name,"DIVISION") == 0){
+				new_operation_IR_node->instruction = DIV;
+			}
+			
+			/*switch(dst->side->name){
+				
+				case "PLUS":
+					new_operation_IR_node->instruction = ADD;
+					break;
+				case "MINUS":
+					new_operation_IR_node->instruction = SUB;
+					break;
+				case "MULTIPLICATION":
+					new_operation_IR_node->instruction = MUL;
+					break;
+				case "DIVISION":
+					new_operation_IR_node->instruction = DIV;
+					break;
+				default:
+					break; //never happens
+			}*/
+			
+			break;
+			
+		case EXPRESSION_NUMBER: ;
+			struct IR_node *new_number_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_number_expr_IR_node->instruction = PUSH;
+			new_number_expr_IR_node->operand_type = CONSTANT;
+			new_number_expr_IR_node->p_code_operand.constant = dst->value;
+			//the code below seems to be wrong because we need variable assignment to pop
+			/*new_number_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_number_expr_IR_node = new_number_expr_IR_node->next;
+			new_number_expr_IR_node->instruction = POP;
+			new_number_expr_IR_node->operand_type = IDENTIFIERS;
+			new_number_expr_IR_node->p_code_operand.identifier = dst->name;*/
+			break;
+			
+		case EXPRESSION_IDENTIFIER: ;
+			struct IR_node *new_identifier_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_identifier_expr_IR_node->instruction = PUSH;
+			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
+			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
+			new_identifier_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_identifier_expr_IR_node = new_identifier_expr_IR_node->next;
+			new_identifier_expr_IR_node->instruction = POP;
+			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
+			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
+			break;
+	
+			
+					
 	}
 
 }
@@ -2357,6 +2586,81 @@ char *gen_label()
 	return new_label;
 
 }
+
+
+//print IR 
+
+void print_IR(struct IR_node *IR){
+	
+	
+	struct IR_node *current = IR;
+	
+	while(current->next != NULL){
+		if(current->label != NULL)
+			printf("%s\t", current->label);
+
+		if( (current->instruction == ADD) || (current->instruction == SUB) || (current->instruction == MUL) || (current->instruction == DIV) || (current->instruction == NOP))
+		{
+			printf("%s\t", getInstructionName(current->instruction));
+		} else{
+		
+			printf("%s\t", getInstructionName(current->instruction));
+			
+			if(current->operand_type == IDENTIFIERS){
+				printf("%s\n", current->p_code_operand.identifier);
+			} else if(current->operand_type == CONSTANT){
+				printf("%d\n", current->p_code_operand.constant);
+			} else if(current->operand_type == REGISTER){
+				printf("%s\n", getRegisterName(current->p_code_operand.p_register));
+			}
+		}
+		
+		current = current->next;
+	}
+
+}
+
+const char* getInstructionName(enum p_code_inst inst) 
+{
+   switch (inst) 
+   {
+      case PUSH: return "PUSH";
+      case POP: return "POP";
+      case ADD: return "ADD";
+      case SUB: return "SUB";
+      case MUL: return "MUL";
+      case DIV: return "DIV";
+      case NOP: return "NOP";
+      case JMP: return "JMP";
+      case BRCT: return "BRCT";
+      case BRCF: return "BRCF";
+
+   }
+}
+
+const char* getOperandType(enum p_code_operand_type type){
+
+	switch (type) 
+	   {
+	      case REGISTER: return "REGISTER";
+	      case CONSTANT: return "CONSTANT";
+	      case IDENTIFIERS: return "IDENTIFIERS";
+	      
+	   }
+} 
+
+const char* getRegisterName(enum p_code_register reg){
+
+	switch (reg) 
+	   {
+	      case PC: return "PC";
+	      case SP: return "SP";
+	      case BP: return "BP";
+	      
+	   }
+} 
+
+
 
 void yyerror(char *s){ fprintf(stderr, " %s\n", s); }
 

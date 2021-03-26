@@ -32,6 +32,7 @@ letter [a-zA-Z]
 "msin" {return MAIN;}
 "arg"  { printf(" ARG "); return ARG;}
 "int" {printf(" INT "); return INT;}
+"void" {return VOID;}
 ([0-9]+) {yylval.value = atoi(yytext); printf(" NUMBER "); return NUMBER;}
 ({letter}|_)({letter}|{digit}|_)* {yylval.identifier_name = strdup(yytext); printf(" IDENTIFIER "); return IDENTIFIER;}
 [ \t\n]+ ; //whitespace ignore

@@ -15,7 +15,9 @@ func mah (arg n, arg b)
 	int p;	
 )
 
-func hel (arg s)
+func hel (void)
 (
 	int z;	
+	int s;
+	s = foo(z);
 )

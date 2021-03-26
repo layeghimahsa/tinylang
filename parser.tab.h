@@ -71,12 +71,13 @@ extern int yydebug;
     IF = 277,
     ELSE = 278,
     MAIN = 279,
-    ARG = 280,
-    COMMENT = 281,
-    PLUS = 282,
-    MINUS = 283,
-    MULTIPLICATION = 284,
-    DIVISION = 285
+    VOID = 280,
+    ARG = 281,
+    COMMENT = 282,
+    PLUS = 283,
+    MINUS = 284,
+    MULTIPLICATION = 285,
+    DIVISION = 286
   };
 #endif
 
@@ -84,13 +85,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 32 "parser.y"
+#line 33 "parser.y"
 
 	char *identifier_name;
 	int value; 
 	struct dst_node *dst_ptr;
 
-#line 94 "parser.tab.h"
+#line 95 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

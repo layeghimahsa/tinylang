@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 //DST
-enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, ELSE_STATEMENT, EXPRESSION};
+enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, FUNCTION_CALL, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, ELSE_STATEMENT, EXPRESSION, EXPRESSION_NUMBER, EXPRESSION_IDENTIFIER, EXPRESSION_FUNCTIONCALL};
 
 struct dst_node
 {
@@ -46,7 +46,7 @@ struct variable_value_node *variablenode;
 //------------------------------------------------------------------------------
 
 //P_code generarion 
-enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF};
+enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF, CALL, RET};
 enum p_code_operand_type {REGISTER, CONSTANT, IDENTIFIERS};
 enum p_code_register {PC, SP, BP};
 
@@ -82,6 +82,8 @@ struct dst_node* new_dstnode_expr_number(int val);
 struct dst_node* new_dstnode_expr_identifier(char *n, int val);
 struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val);
 struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val);
+struct dst_node* new_dstnode_expr_functioncall(char *n, int val);
+struct dst_node* new_dstnode_functioncall(char *n, int val);
 int check_semantics(struct dst_node *dst);
 void print_dst(struct dst_node *dst);
 struct IR_node *generate_IR(struct dst_node *dst);
@@ -98,6 +100,12 @@ char *gen_label();
 
 void add_variable_value(struct variable_value_node **variablenode, char *n, int val);
 int get_variable_value(struct variable_value_node *head, char *n);
+struct IR_node *generate_IR(struct dst_node *dst);
+const char* getInstructionName(enum p_code_inst inst);
+const char* getOperandType(enum p_code_operand_type type);
+const char* getRegisterName(enum p_code_register reg);
+void print_IR(struct IR_node *IR);
+
 
 #endif
 

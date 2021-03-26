@@ -28,6 +28,7 @@
 %type <dst_ptr> statement_list
 %type <dst_ptr> statement
 %type <dst_ptr> expr
+%type <dst_ptr> function_call
 
 %union{
 	char *identifier_name;
@@ -46,7 +47,7 @@
 %token AND OR NOT
 %token RETURN
 %token IF ELSE
-%token MAIN
+%token MAIN VOID
 %token ARG
 %token COMMENT
 %token <identifier_name> PLUS MINUS MULTIPLICATION DIVISION
@@ -82,7 +83,7 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 	node->type = FUNCTION_HEADER;
 	node->down = NULL;
 	node->side = NULL;
-	number_of_args = 1;
+	number_of_args = 1; //make this 0 to see what will happen!!!!!!!!!!!!!!!!!!!!!!!!!! , (tested) result-> it seems it should be 1
 	counter = 0;
 	$$ = node;
 	
@@ -93,7 +94,8 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 };
 
 function_args: ARG IDENTIFIER COMMA function_args { number_of_args = number_of_args + counter;}
-	     | ARG IDENTIFIER  { counter = 1; }         
+	     | ARG IDENTIFIER  { counter = 1; } 
+	     | VOID {number_of_args = 0;}        
 	     ;
 	          
 
@@ -107,27 +109,38 @@ variable_declaration: INT IDENTIFIER SC
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
 	current_identifier = $1;
-	//printf("current identifier is: %s\n", current_identifier);
+	printf("000000000000000000000\n");
+	printf("current identifier is: %s\n", current_identifier);
 	$$ = new_dstnode_variableassignment($1);
+	printf("1111111111111\n");
 	$$->down = $3;
+	printf("222222222222\n");
 	$$->value = $$->down->value;
+	printf("333333333333333\n");
 	
 	printf("\ncurrent identifier is: %s\n", current_identifier);
 	printf("valueeee: %d\n",current_value);
 	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
+} |  IDENTIFIER ASSIGNMENT expr  //this is for function call exception
+{ 
+	current_identifier = $1;
+	$$ = new_dstnode_variableassignment($1);
+	$$->down = $3;
+	$$->value = $$->down->value;
+	add_variable_value(&variablenode, current_identifier, current_value);
 };
 
 
-expr: NUMBER  {$$ = new_dstnode_expr_number($1); current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
+expr: NUMBER  {$$ = new_dstnode_expr_number($1); $$->name = current_identifier; current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
     | IDENTIFIER {$$ = new_dstnode_expr_identifier($1, get_variable_value(variablenode, $1)); current_value = get_variable_value(variablenode, $1);}
     | expr PLUS expr {current_value = $1->value + $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
     | expr MINUS expr {current_value = $1->value - $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
     | expr MULTIPLICATION expr {current_value = $1->value * $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
     | expr DIVISION expr { current_value = $1->value / $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
     | LPAR expr RPAR  {current_value = $2->value; $$ = new_dstnode_expr_pranthesis($2, current_value); }
-;
+    | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); current_value = $$->value;}; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 {
@@ -168,11 +181,24 @@ else_statement: ELSE LPAR statement_list RPAR
 statement: variable_declaration {$$ = $1;}
 	 | variable_assignment {$$ = $1;} 
 	 | if_statement {$$ = $1;}
-	 | else_statement {$$ = $1;};
+	 | else_statement {$$ = $1;}
+	 | function_call {$$ = $1;};
 	 
 
 statement_list: statement statement_list { $1->side = $2; $$ = $1; }
 		| { $$ = NULL;};
+		
+function_call: IDENTIFIER LPAR params RPAR SC {
+			printf("\ndetecting function call\n");
+			$$ = new_dstnode_functioncall($1, number_of_args);
+			number_of_args = 1; 
+			counter = 0;
+		};
+
+params: IDENTIFIER COMMA params { number_of_args = number_of_args + counter;}
+	| IDENTIFIER  { counter = 1; } 
+	| VOID {number_of_args = 0;}        
+	;  
 
 
 %%
@@ -220,7 +246,7 @@ struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 struct dst_node* new_program_dstnode()
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->name = "program";
+	node->name = "main"; // I changed form "program" to "main" for IR generation purpose
 	node->value = 0;
 	node->type = PROGRAM;
 	node->down = NULL;
@@ -232,7 +258,7 @@ struct dst_node* new_program_dstnode()
 struct dst_node* new_dstnode_expr_number(int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
+	node->type = EXPRESSION_NUMBER;
 	node->name = NULL;
 	node->value = val;
 	node->down = NULL;
@@ -244,7 +270,7 @@ struct dst_node* new_dstnode_expr_number(int val)
 struct dst_node* new_dstnode_expr_identifier(char *n, int val)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
+	node->type = EXPRESSION_IDENTIFIER;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
 	node->value = val;
@@ -276,6 +302,35 @@ struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val)
 	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
+	return node;
+
+}
+
+struct dst_node* new_dstnode_expr_functioncall(char *n, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = EXPRESSION_FUNCTIONCALL;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
+
+
+struct dst_node* new_dstnode_functioncall(char *n, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = FUNCTION_CALL;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	//printf("\n name: %s\n",node->name);
+	//printf("value: %d\n",node->value);
 	return node;
 
 }
@@ -530,17 +585,32 @@ char* getType(int i){
 		name = "FUNCTION";
 		break;
 	case 3: 
-		name = "VARIABLE_DECLARATION";
+		name = "FUNCTION_CALL";
 		break;
 	case 4: 
-		name = "VARIABLE_ASSIGNMENT";
+		name = "VARIABLE_DECLARATION";
 		break;
 	case 5: 
-		name = "IF_STATEMENT";
+		name = "VARIABLE_ASSIGNMENT";
 		break;
 	case 6: 
+		name = "IF_STATEMENT";
+		break;
+	case 7: 
 		name = "ELSE_STATEMENT";
-		break;						
+		break;	
+	case 8: 
+		name = "EXPRESSION";
+		break;	
+	case 9: 
+		name = "EXPRESSION_NUMBER";
+		break;	
+	case 10: 
+		name = "EXPRESSION_IDENTIFIER";
+		break;	
+	case 11:
+		name = "EXPRESSION_FUNCTIONCALL";
+		break;					
 	default: 
 		break;	
 		
@@ -625,19 +695,44 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope){
 
 struct IR_node *generate_IR(struct dst_node *dst){
 	
-	//If we reached a NULL node, just return NULL as well
+
 	if(dst == NULL){
-		return (struct IR_node *)0;
+		return NULL;
 	}
 
 	if(dst->type == PROGRAM){
-		return generate_IR(dst->down);
+		printf("in program case.\n");
+		struct IR_node *new_prog_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+		new_prog_IR_node->instruction = CALL;
+		new_prog_IR_node->operand_type = IDENTIFIERS;
+		new_prog_IR_node->p_code_operand.identifier = dst->name;
+		new_prog_IR_node->next = generate_IR(dst->down);
+		return new_prog_IR_node;
 	}
 	
 	
 	//should have a switch-case for every type of dst node
 	switch(dst->type)
 	{
+	
+		case FUNCTION: ;//this should be changed to function call later
+			printf("in function case.\n");
+			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_call_IR_node->instruction = CALL;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->name;
+			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
+			break;
+		
+		case RETURN: ;//this should be added and definitely be changed.
+			struct IR_node *new_func_ret_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_ret_IR_node->instruction = RET;
+			new_func_ret_IR_node->operand_type = CONSTANT;
+			new_func_ret_IR_node->p_code_operand.constant = dst->value;
+			break;
+			
+			
+			
 		case VARIABLE_ASSIGNMENT: ;
 			struct IR_node *new_IR_node = generate_IR(dst->down);
 			struct IR_node *last_node = new_IR_node;
@@ -688,12 +783,96 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
 			break;
-		
-		//case EXPRESSION:
+			
+		case ELSE_STATEMENT: ;
+			struct IR_node *new_else_IR_node = generate_IR(dst->down); //p-code for else body
+			break;
 			
 			
+		case EXPRESSION: ;
+			
+			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side->side); //p-code for first expression result
+			struct IR_node *last_node_fisrt_expr = new_first_expr_IR_node;
+			while(last_node_fisrt_expr->next != NULL)
+				last_node_fisrt_expr = last_node_fisrt_expr->next;
+			last_node_fisrt_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_expr = last_node_fisrt_expr->next;
+			last_node_fisrt_expr->instruction = PUSH;
+			last_node_fisrt_expr->operand_type = CONSTANT;
+			last_node_fisrt_expr->p_code_operand.constant = dst->side->side->value;
+			
+			struct IR_node *new_second_expr_IR_node = generate_IR(dst); //p-code for second expression result
+			struct IR_node *last_node_second_expr = new_second_expr_IR_node;
+			while(last_node_second_expr->next != NULL)
+				last_node_second_expr = last_node_second_expr->next;
+			last_node_second_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_expr = last_node_second_expr->next;
+			last_node_second_expr->instruction = PUSH;
+			last_node_second_expr->operand_type = CONSTANT;
+			last_node_second_expr->p_code_operand.constant = dst->value;
+			
+			last_node_fisrt_expr->next = last_node_second_expr;
+			struct IR_node *new_operation_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_expr->next = new_operation_IR_node;
 			
 			
+			if(strcmp(dst->side->name,"PLUS") == 0){
+				new_operation_IR_node->instruction = ADD;
+			} else if(strcmp(dst->side->name,"MINUS") == 0){
+				new_operation_IR_node->instruction = SUB;
+			} else if(strcmp(dst->side->name,"MULTIPLICATION") == 0){
+				new_operation_IR_node->instruction = MUL;
+			} else if(strcmp(dst->side->name,"DIVISION") == 0){
+				new_operation_IR_node->instruction = DIV;
+			}
+			
+			/*switch(dst->side->name){
+				
+				case "PLUS":
+					new_operation_IR_node->instruction = ADD;
+					break;
+				case "MINUS":
+					new_operation_IR_node->instruction = SUB;
+					break;
+				case "MULTIPLICATION":
+					new_operation_IR_node->instruction = MUL;
+					break;
+				case "DIVISION":
+					new_operation_IR_node->instruction = DIV;
+					break;
+				default:
+					break; //never happens
+			}*/
+			
+			break;
+			
+		case EXPRESSION_NUMBER: ;
+			struct IR_node *new_number_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_number_expr_IR_node->instruction = PUSH;
+			new_number_expr_IR_node->operand_type = CONSTANT;
+			new_number_expr_IR_node->p_code_operand.constant = dst->value;
+			//the code below seems to be wrong because we need variable assignment to pop
+			/*new_number_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_number_expr_IR_node = new_number_expr_IR_node->next;
+			new_number_expr_IR_node->instruction = POP;
+			new_number_expr_IR_node->operand_type = IDENTIFIERS;
+			new_number_expr_IR_node->p_code_operand.identifier = dst->name;*/
+			break;
+			
+		case EXPRESSION_IDENTIFIER: ;
+			struct IR_node *new_identifier_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_identifier_expr_IR_node->instruction = PUSH;
+			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
+			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
+			new_identifier_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_identifier_expr_IR_node = new_identifier_expr_IR_node->next;
+			new_identifier_expr_IR_node->instruction = POP;
+			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
+			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
+			break;
+	
+			
+					
 	}
 
 }
@@ -710,6 +889,81 @@ char *gen_label()
 	return new_label;
 
 }
+
+
+//print IR 
+
+void print_IR(struct IR_node *IR){
+	
+	
+	struct IR_node *current = IR;
+	
+	while(current->next != NULL){
+		if(current->label != NULL)
+			printf("%s\t", current->label);
+
+		if( (current->instruction == ADD) || (current->instruction == SUB) || (current->instruction == MUL) || (current->instruction == DIV) || (current->instruction == NOP))
+		{
+			printf("%s\t", getInstructionName(current->instruction));
+		} else{
+		
+			printf("%s\t", getInstructionName(current->instruction));
+			
+			if(current->operand_type == IDENTIFIERS){
+				printf("%s\n", current->p_code_operand.identifier);
+			} else if(current->operand_type == CONSTANT){
+				printf("%d\n", current->p_code_operand.constant);
+			} else if(current->operand_type == REGISTER){
+				printf("%s\n", getRegisterName(current->p_code_operand.p_register));
+			}
+		}
+		
+		current = current->next;
+	}
+
+}
+
+const char* getInstructionName(enum p_code_inst inst) 
+{
+   switch (inst) 
+   {
+      case PUSH: return "PUSH";
+      case POP: return "POP";
+      case ADD: return "ADD";
+      case SUB: return "SUB";
+      case MUL: return "MUL";
+      case DIV: return "DIV";
+      case NOP: return "NOP";
+      case JMP: return "JMP";
+      case BRCT: return "BRCT";
+      case BRCF: return "BRCF";
+
+   }
+}
+
+const char* getOperandType(enum p_code_operand_type type){
+
+	switch (type) 
+	   {
+	      case REGISTER: return "REGISTER";
+	      case CONSTANT: return "CONSTANT";
+	      case IDENTIFIERS: return "IDENTIFIERS";
+	      
+	   }
+} 
+
+const char* getRegisterName(enum p_code_register reg){
+
+	switch (reg) 
+	   {
+	      case PC: return "PC";
+	      case SP: return "SP";
+	      case BP: return "BP";
+	      
+	   }
+} 
+
+
 
 void yyerror(char *s){ fprintf(stderr, " %s\n", s); }
 
