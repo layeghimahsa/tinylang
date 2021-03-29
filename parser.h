@@ -4,12 +4,13 @@
 #include <stdbool.h>
 
 //DST
-enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, FUNCTION_CALL, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, ELSE_STATEMENT, EXPRESSION, EXPRESSION_NUMBER, EXPRESSION_IDENTIFIER, EXPRESSION_FUNCTIONCALL};
+enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, FUNCTION_CALL, FUNCTION_RET, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, IF_CONDITION, IF_CONDITION_MULTIPLE, ELSE_STATEMENT, EXPRESSION, EXPRESSION_NUMBER, EXPRESSION_IDENTIFIER, EXPRESSION_FUNCTIONCALL};
 
 struct dst_node
 {
 	enum node_type type;
 	char *name;
+	char *operator_name;
 	int value;
 	struct dst_node *down;
 	struct dst_node *side;	
@@ -84,6 +85,9 @@ struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_no
 struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val);
 struct dst_node* new_dstnode_expr_functioncall(char *n, int val);
 struct dst_node* new_dstnode_functioncall(char *n, int val);
+struct dst_node* new_dstnode_functionret(char *n, int val);
+struct dst_node* new_dstnode_if_condition(char *n, char *operator ,int val);
+struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char *operator, struct dst_node* second);
 int check_semantics(struct dst_node *dst);
 void print_dst(struct dst_node *dst);
 struct IR_node *generate_IR(struct dst_node *dst);

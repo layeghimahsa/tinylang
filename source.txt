@@ -8,11 +8,22 @@ func foo (arg x)
 	m = 2;
 	l = 3;
 	q = s + m * l;
+	return q;
 )
 
 func mah (arg n, arg b)
 (
-	int p;	
+	l = 5;
+	
+	if(n == 3)
+	(
+		int p;
+	)
+	
+	int mahsa;
+	foo(s);
+	return s;
+	
 )
 
 func hel (void)
@@ -20,4 +31,5 @@ func hel (void)
 	int z;	
 	int s;
 	s = foo(z);
+	return 0;
 )

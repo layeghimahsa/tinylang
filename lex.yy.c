@@ -778,7 +778,7 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 13 "scanner.l"
-{return SC;}
+{printf(" SC "); return SC;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
@@ -788,67 +788,67 @@ YY_RULE_SETUP
 case 6:
 YY_RULE_SETUP
 #line 15 "scanner.l"
-{return EQUAL;}
+{printf(" == "); yylval.identifier_name = strdup(yytext);  return EQUAL;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 16 "scanner.l"
-{return INEQUAL;}
+{yylval.identifier_name = strdup(yytext); return INEQUAL;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 17 "scanner.l"
-{return GREATER;}
+{yylval.identifier_name = strdup(yytext); return GREATER;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 18 "scanner.l"
-{return LESS;}
+{yylval.identifier_name = strdup(yytext); return LESS;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 19 "scanner.l"
-{return GREATEREQUAL;}
+{yylval.identifier_name = strdup(yytext); return GREATEREQUAL;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 20 "scanner.l"
-{return LESSEQUAL;}
+{yylval.identifier_name = strdup(yytext); return LESSEQUAL;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 21 "scanner.l"
-{return AND;}
+{yylval.identifier_name = strdup(yytext); return AND;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 22 "scanner.l"
-{return OR;}
+{yylval.identifier_name = strdup(yytext); return OR;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 23 "scanner.l"
-{return NOT;}
+{yylval.identifier_name = strdup(yytext); return NOT;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 24 "scanner.l"
-{printf(" PLUS "); return PLUS;}
+{yylval.identifier_name = strdup(yytext); return PLUS;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 25 "scanner.l"
-{return MINUS;}
+{yylval.identifier_name = strdup(yytext); return MINUS;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 26 "scanner.l"
-{return MULTIPLICATION;}
+{yylval.identifier_name = strdup(yytext); return MULTIPLICATION;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 27 "scanner.l"
-{return DIVISION;}
+{yylval.identifier_name = strdup(yytext); return DIVISION;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
@@ -858,7 +858,7 @@ YY_RULE_SETUP
 case 20:
 YY_RULE_SETUP
 #line 29 "scanner.l"
-{return IF;}
+{printf(" IF "); return IF;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP

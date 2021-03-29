@@ -10,23 +10,23 @@ letter [a-zA-Z]
 "(" {printf(" LPAR "); return LPAR;}
 ")" {printf(" RPAR "); return RPAR;}
 "," {printf(" COMMA ");return COMMA;}
-";" {return SC;}
+";" {printf(" SC "); return SC;}
 "=" {printf(" ASSIGNMENT "); return ASSIGNMENT;}
-"==" {return EQUAL;}
-"!=" {return INEQUAL;}
-">" {return GREATER;}
-"<" {return LESS;}
-">=" {return GREATEREQUAL;}
-"<=" {return LESSEQUAL;}
-"&&" {return AND;}
-"||" {return OR;}
-"!"  {return NOT;}
-"+" {printf(" PLUS "); return PLUS;}
-"-" {return MINUS;}
-"*" {return MULTIPLICATION;}
-"/" {return DIVISION;}
+"==" {printf(" == "); yylval.identifier_name = strdup(yytext);  return EQUAL;}
+"!=" {yylval.identifier_name = strdup(yytext); return INEQUAL;}
+">" {yylval.identifier_name = strdup(yytext); return GREATER;}
+"<" {yylval.identifier_name = strdup(yytext); return LESS;}
+">=" {yylval.identifier_name = strdup(yytext); return GREATEREQUAL;}
+"<=" {yylval.identifier_name = strdup(yytext); return LESSEQUAL;}
+"&&" {yylval.identifier_name = strdup(yytext); return AND;}
+"||" {yylval.identifier_name = strdup(yytext); return OR;}
+"!"  {yylval.identifier_name = strdup(yytext); return NOT;}
+"+" {yylval.identifier_name = strdup(yytext); return PLUS;}
+"-" {yylval.identifier_name = strdup(yytext); return MINUS;}
+"*" {yylval.identifier_name = strdup(yytext); return MULTIPLICATION;}
+"/" {yylval.identifier_name = strdup(yytext); return DIVISION;}
 "return" {return RETURN;}
-"if" {return IF;}
+"if" {printf(" IF "); return IF;}
 "else" {return ELSE;}
 "func" {printf(" FUNC "); return FUNC;}
 "msin" {return MAIN;}

@@ -12,7 +12,8 @@
 	char *mother_function;
 	char *current_identifier;
 	int current_value;
-	
+	int arg_temp;
+	char *if_operator;
 %}
 
 //Token Values
@@ -29,6 +30,8 @@
 %type <dst_ptr> statement
 %type <dst_ptr> expr
 %type <dst_ptr> function_call
+%type <dst_ptr> function_ret
+
 
 %union{
 	char *identifier_name;
@@ -43,8 +46,8 @@
 %token FUNC
 %token SC COMMA
 %token ASSIGNMENT
-%token EQUAL INEQUAL GREATER LESS GREATEREQUAL LESSEQUAL
-%token AND OR NOT
+%token <identifier_name> EQUAL INEQUAL GREATER LESS GREATEREQUAL LESSEQUAL
+%token <identifier_name> AND OR NOT
 %token RETURN
 %token IF ELSE
 %token MAIN VOID
@@ -83,11 +86,12 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 	node->type = FUNCTION_HEADER;
 	node->down = NULL;
 	node->side = NULL;
+	arg_temp = number_of_args;
 	number_of_args = 1; //make this 0 to see what will happen!!!!!!!!!!!!!!!!!!!!!!!!!! , (tested) result-> it seems it should be 1
 	counter = 0;
 	$$ = node;
 	
-	mother_function = $2; // This is used for variable scope
+	mother_function = $2; // This is used for variable scope //this is also for return (updated!)
 	//printf("\nmother function is: %s\n", mother_function);
 	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
 
@@ -109,14 +113,9 @@ variable_declaration: INT IDENTIFIER SC
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
 	current_identifier = $1;
-	printf("000000000000000000000\n");
-	printf("current identifier is: %s\n", current_identifier);
 	$$ = new_dstnode_variableassignment($1);
-	printf("1111111111111\n");
 	$$->down = $3;
-	printf("222222222222\n");
 	$$->value = $$->down->value;
-	printf("333333333333333\n");
 	
 	printf("\ncurrent identifier is: %s\n", current_identifier);
 	printf("valueeee: %d\n",current_value);
@@ -149,23 +148,27 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 	$$->value = 0;
 	$$->type = IF_STATEMENT;
 	$$->down = $3;
-	$$->side = NULL;
+	($$->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	($$->down)->side = $6;
+	//printf("\n if condition name is: %s\n", $$->down->name);
+	//printf("\n if condition operator name is: %s\n", $$->down->operator_name);
+	//printf("\n if condition value is: %d\n", $$->down->value);
 	//($$->down)->side = $6;
-	$$->side = $6;
+	//$$->side = $6;
 
 };
 
-if_conditions: if_condition
-	     | LPAR if_condition RPAR AND if_conditions
-	     | LPAR if_condition RPAR OR if_conditions
-	     | NOT LPAR if_condition RPAR if_conditions ;
+if_conditions: if_condition {$$ = new_dstnode_if_condition(current_identifier, if_operator, current_value); }
+	     | LPAR if_conditions RPAR AND LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
+	     | LPAR if_conditions RPAR OR LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
+	     | NOT LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($3, $1, NULL);} ;
 
-if_condition: IDENTIFIER EQUAL NUMBER 
-	    | IDENTIFIER INEQUAL NUMBER
-	    | IDENTIFIER GREATER NUMBER
-	    | IDENTIFIER LESS NUMBER
-	    | IDENTIFIER GREATEREQUAL NUMBER
-	    | IDENTIFIER LESSEQUAL NUMBER ;
+if_condition: IDENTIFIER EQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
+	    | IDENTIFIER INEQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
+	    | IDENTIFIER GREATER NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
+	    | IDENTIFIER LESS NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
+	    | IDENTIFIER GREATEREQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
+	    | IDENTIFIER LESSEQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; };
 	   
 
 else_statement: ELSE LPAR statement_list RPAR
@@ -182,7 +185,8 @@ statement: variable_declaration {$$ = $1;}
 	 | variable_assignment {$$ = $1;} 
 	 | if_statement {$$ = $1;}
 	 | else_statement {$$ = $1;}
-	 | function_call {$$ = $1;};
+	 | function_call {$$ = $1;}
+	 | function_ret {$$ = $1;};
 	 
 
 statement_list: statement statement_list { $1->side = $2; $$ = $1; }
@@ -199,6 +203,10 @@ params: IDENTIFIER COMMA params { number_of_args = number_of_args + counter;}
 	| IDENTIFIER  { counter = 1; } 
 	| VOID {number_of_args = 0;}        
 	;  
+	
+function_ret: RETURN LPAR expr RPAR SC { $$ = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); } //I set func_ret value to function number of args not return value; used for IR later
+	     | RETURN expr SC { $$ = new_dstnode_functionret(mother_function, arg_temp);}
+	     | RETURN NUMBER { $$ = new_dstnode_functionret(mother_function, arg_temp);};
 
 
 %%
@@ -285,6 +293,7 @@ struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_no
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node = first;
+	node->type = EXPRESSION;
 	node->value = val;
 	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->side->name = (char *) malloc(strlen(n)+1);
@@ -329,11 +338,63 @@ struct dst_node* new_dstnode_functioncall(char *n, int val)
 	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
-	//printf("\n name: %s\n",node->name);
-	//printf("value: %d\n",node->value);
 	return node;
 
 }
+
+struct dst_node* new_dstnode_functionret(char *n, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = FUNCTION_RET;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
+
+struct dst_node* new_dstnode_if_condition(char *n, char *operator ,int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = IF_CONDITION;
+	node->value = val;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->operator_name,operator);
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
+
+struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char *operator, struct dst_node* second)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node = first;
+	node->type = IF_CONDITION_MULTIPLE;
+	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->side->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->side->operator_name,operator);
+	node->side->side = second;
+	return node;
+
+}
+
+/*struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, char *operator)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node = first;
+	node->type = IF_CONDITION_MULTIPLE;
+	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->side->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->side->operator,operator);
+	return node;
+
+}*/
+
 
 
 //--------------------------------------------------------------------------------------------------------------------------
@@ -587,28 +648,37 @@ char* getType(int i){
 	case 3: 
 		name = "FUNCTION_CALL";
 		break;
-	case 4: 
+	case 4:
+		name = "FUNCTION_RET";
+		break;
+	case 5:
 		name = "VARIABLE_DECLARATION";
 		break;
-	case 5: 
+	case 6: 
 		name = "VARIABLE_ASSIGNMENT";
 		break;
-	case 6: 
+	case 7: 
 		name = "IF_STATEMENT";
 		break;
-	case 7: 
+	case 8: 
+		name = "IF_CONDITION";
+		break;
+	case 9:
+		name = "IF_CONDITION_MULTIPLE";
+		break;
+	case 10:
 		name = "ELSE_STATEMENT";
 		break;	
-	case 8: 
+	case 11: 
 		name = "EXPRESSION";
 		break;	
-	case 9: 
+	case 12: 
 		name = "EXPRESSION_NUMBER";
 		break;	
-	case 10: 
+	case 13: 
 		name = "EXPRESSION_IDENTIFIER";
 		break;	
-	case 11:
+	case 14:
 		name = "EXPRESSION_FUNCTIONCALL";
 		break;					
 	default: 
