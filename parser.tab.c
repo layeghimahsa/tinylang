@@ -552,11 +552,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    65,    65,    72,    73,    75,    81,   100,   101,   102,
-     106,   113,   125,   135,   136,   137,   138,   139,   140,   141,
-     142,   144,   161,   162,   163,   164,   166,   167,   168,   169,
-     170,   171,   174,   184,   185,   186,   187,   188,   189,   192,
-     193,   195,   202,   203,   204,   207,   208,   209
+       0,    66,    66,    73,    74,    76,    82,   101,   102,   103,
+     107,   116,   129,   139,   140,   141,   142,   143,   144,   145,
+     146,   149,   173,   174,   175,   176,   178,   179,   180,   181,
+     182,   183,   186,   196,   197,   198,   199,   200,   201,   204,
+     205,   208,   215,   216,   217,   220,   221,   222
 };
 #endif
 
@@ -1413,7 +1413,7 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 66 "parser.y"
+#line 67 "parser.y"
         {
 		dst = new_program_dstnode();
 		dst->down = (yyvsp[0].dst_ptr);
@@ -1422,19 +1422,19 @@ yyreduce:
     break;
 
   case 3:
-#line 72 "parser.y"
+#line 73 "parser.y"
                                        {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
 #line 1428 "parser.tab.c"
     break;
 
   case 4:
-#line 73 "parser.y"
+#line 74 "parser.y"
                            {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
 #line 1434 "parser.tab.c"
     break;
 
   case 5:
-#line 76 "parser.y"
+#line 77 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
@@ -1443,7 +1443,7 @@ yyreduce:
     break;
 
   case 6:
-#line 82 "parser.y"
+#line 83 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = (yyvsp[-3].identifier_name);
@@ -1465,51 +1465,54 @@ yyreduce:
     break;
 
   case 7:
-#line 100 "parser.y"
+#line 101 "parser.y"
                                                   { number_of_args = number_of_args + counter;}
 #line 1471 "parser.tab.c"
     break;
 
   case 8:
-#line 101 "parser.y"
+#line 102 "parser.y"
                                { counter = 1; }
 #line 1477 "parser.tab.c"
     break;
 
   case 9:
-#line 102 "parser.y"
+#line 103 "parser.y"
                     {number_of_args = 0;}
 #line 1483 "parser.tab.c"
     break;
 
   case 10:
-#line 107 "parser.y"
+#line 108 "parser.y"
 {
+	printf("\nvariable declaration detected\n");
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
+	//printf("\n I want to see what is the name of identifier here %s\n", $$->name);
 	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 }
-#line 1492 "parser.tab.c"
+#line 1494 "parser.tab.c"
     break;
 
   case 11:
-#line 114 "parser.y"
+#line 117 "parser.y"
 {
+	printf("\nvariable assignment detected\n");
 	current_identifier = (yyvsp[-3].identifier_name);
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-3].identifier_name));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->value = (yyval.dst_ptr)->down->value;
 	
-	printf("\ncurrent identifier is: %s\n", current_identifier);
-	printf("valueeee: %d\n",current_value);
+	//printf("\ncurrent identifier is: %s\n", current_identifier);
+	//printf("valueeee: %d\n",current_value);
 	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
 }
-#line 1509 "parser.tab.c"
+#line 1512 "parser.tab.c"
     break;
 
   case 12:
-#line 126 "parser.y"
+#line 130 "parser.y"
 { 
 	current_identifier = (yyvsp[-2].identifier_name);
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-2].identifier_name));
@@ -1517,139 +1520,146 @@ yyreduce:
 	(yyval.dst_ptr)->value = (yyval.dst_ptr)->down->value;
 	add_variable_value(&variablenode, current_identifier, current_value);
 }
-#line 1521 "parser.tab.c"
+#line 1524 "parser.tab.c"
     break;
 
   case 13:
-#line 135 "parser.y"
+#line 139 "parser.y"
               {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value)); (yyval.dst_ptr)->name = current_identifier; current_value = (yyvsp[0].value);}
-#line 1527 "parser.tab.c"
+#line 1530 "parser.tab.c"
     break;
 
   case 14:
-#line 136 "parser.y"
+#line 140 "parser.y"
                  {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name), get_variable_value(variablenode, (yyvsp[0].identifier_name))); current_value = get_variable_value(variablenode, (yyvsp[0].identifier_name));}
-#line 1533 "parser.tab.c"
+#line 1536 "parser.tab.c"
     break;
 
   case 15:
-#line 137 "parser.y"
+#line 141 "parser.y"
                      {current_value = (yyvsp[-2].dst_ptr)->value + (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
-#line 1539 "parser.tab.c"
+#line 1542 "parser.tab.c"
     break;
 
   case 16:
-#line 138 "parser.y"
+#line 142 "parser.y"
                       {current_value = (yyvsp[-2].dst_ptr)->value - (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value);}
-#line 1545 "parser.tab.c"
+#line 1548 "parser.tab.c"
     break;
 
   case 17:
-#line 139 "parser.y"
+#line 143 "parser.y"
                                {current_value = (yyvsp[-2].dst_ptr)->value * (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
-#line 1551 "parser.tab.c"
+#line 1554 "parser.tab.c"
     break;
 
   case 18:
-#line 140 "parser.y"
+#line 144 "parser.y"
                          { current_value = (yyvsp[-2].dst_ptr)->value / (yyvsp[0].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr), current_value); }
-#line 1557 "parser.tab.c"
+#line 1560 "parser.tab.c"
     break;
 
   case 19:
-#line 141 "parser.y"
+#line 145 "parser.y"
                       {current_value = (yyvsp[-1].dst_ptr)->value; (yyval.dst_ptr) = new_dstnode_expr_pranthesis((yyvsp[-1].dst_ptr), current_value); }
-#line 1563 "parser.tab.c"
+#line 1566 "parser.tab.c"
     break;
 
   case 20:
-#line 142 "parser.y"
+#line 146 "parser.y"
                     {(yyval.dst_ptr) = new_dstnode_expr_functioncall((yyvsp[0].dst_ptr)->name, (yyvsp[0].dst_ptr)->value); current_value = (yyval.dst_ptr)->value;}
-#line 1569 "parser.tab.c"
+#line 1572 "parser.tab.c"
     break;
 
   case 21:
-#line 145 "parser.y"
+#line 150 "parser.y"
 {
+	printf("\nif statement detected\n");
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	(yyval.dst_ptr)->name = NULL;
-	(yyval.dst_ptr)->value = 0;
-	(yyval.dst_ptr)->type = IF_STATEMENT;
-	(yyval.dst_ptr)->down = (yyvsp[-4].dst_ptr);
-	((yyval.dst_ptr)->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	((yyval.dst_ptr)->down)->side = (yyvsp[-1].dst_ptr);
+	node->name = NULL;
+	node->value = 0;
+	node->type = IF_STATEMENT;
+	printf("\n test!\n");
+	node->down = (yyvsp[-4].dst_ptr);
+	printf("\ndown!\n");
+	//printf("\nif statement confiton name! %s\n", $$->down->name );
+	//($$->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	(node->down)->side = (yyvsp[-1].dst_ptr);
+	printf("\ndown side!\n");
+	printf("\nif statement body name! %s\n", ((node->down)->side)->name );
 	//printf("\n if condition name is: %s\n", $$->down->name);
 	//printf("\n if condition operator name is: %s\n", $$->down->operator_name);
 	//printf("\n if condition value is: %d\n", $$->down->value);
 	//($$->down)->side = $6;
 	//$$->side = $6;
+	(yyval.dst_ptr) = node;
 
 }
-#line 1589 "parser.tab.c"
+#line 1599 "parser.tab.c"
     break;
 
   case 22:
-#line 161 "parser.y"
+#line 173 "parser.y"
                             {(yyval.dst_ptr) = new_dstnode_if_condition(current_identifier, if_operator, current_value); }
-#line 1595 "parser.tab.c"
+#line 1605 "parser.tab.c"
     break;
 
   case 23:
-#line 162 "parser.y"
+#line 174 "parser.y"
                                                                    { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
-#line 1601 "parser.tab.c"
+#line 1611 "parser.tab.c"
     break;
 
   case 24:
-#line 163 "parser.y"
+#line 175 "parser.y"
                                                                   { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
-#line 1607 "parser.tab.c"
+#line 1617 "parser.tab.c"
     break;
 
   case 25:
-#line 164 "parser.y"
+#line 176 "parser.y"
                                            { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-1].dst_ptr), (yyvsp[-3].identifier_name), NULL);}
-#line 1613 "parser.tab.c"
+#line 1623 "parser.tab.c"
     break;
 
   case 26:
-#line 166 "parser.y"
+#line 178 "parser.y"
                                       { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1619 "parser.tab.c"
+#line 1629 "parser.tab.c"
     break;
 
   case 27:
-#line 167 "parser.y"
+#line 179 "parser.y"
                                         { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1625 "parser.tab.c"
+#line 1635 "parser.tab.c"
     break;
 
   case 28:
-#line 168 "parser.y"
+#line 180 "parser.y"
                                         { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1631 "parser.tab.c"
+#line 1641 "parser.tab.c"
     break;
 
   case 29:
-#line 169 "parser.y"
+#line 181 "parser.y"
                                      { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1637 "parser.tab.c"
+#line 1647 "parser.tab.c"
     break;
 
   case 30:
-#line 170 "parser.y"
+#line 182 "parser.y"
                                              { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1643 "parser.tab.c"
+#line 1653 "parser.tab.c"
     break;
 
   case 31:
-#line 171 "parser.y"
+#line 183 "parser.y"
                                           { current_identifier = (yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1649 "parser.tab.c"
+#line 1659 "parser.tab.c"
     break;
 
   case 32:
-#line 175 "parser.y"
+#line 187 "parser.y"
 {
 	(yyval.dst_ptr)->name = NULL;
 	(yyval.dst_ptr)->value = 0;
@@ -1657,106 +1667,106 @@ yyreduce:
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr);
 	(yyval.dst_ptr)->side = NULL;
 }
-#line 1661 "parser.tab.c"
+#line 1671 "parser.tab.c"
     break;
 
   case 33:
-#line 184 "parser.y"
-                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1667 "parser.tab.c"
+#line 196 "parser.y"
+                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VD] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1677 "parser.tab.c"
     break;
 
   case 34:
-#line 185 "parser.y"
-                               {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1673 "parser.tab.c"
+#line 197 "parser.y"
+                               {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VA] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1683 "parser.tab.c"
     break;
 
   case 35:
-#line 186 "parser.y"
-                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1679 "parser.tab.c"
+#line 198 "parser.y"
+                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [IF] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1689 "parser.tab.c"
     break;
 
   case 36:
-#line 187 "parser.y"
-                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1685 "parser.tab.c"
+#line 199 "parser.y"
+                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [EL] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1695 "parser.tab.c"
     break;
 
   case 37:
-#line 188 "parser.y"
-                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1691 "parser.tab.c"
+#line 200 "parser.y"
+                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [FU] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1701 "parser.tab.c"
     break;
 
   case 38:
-#line 189 "parser.y"
-                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
-#line 1697 "parser.tab.c"
+#line 201 "parser.y"
+                        {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [RE] name: %s\n",(yyval.dst_ptr)->name);}
+#line 1707 "parser.tab.c"
     break;
 
   case 39:
-#line 192 "parser.y"
+#line 204 "parser.y"
                                          { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1703 "parser.tab.c"
+#line 1713 "parser.tab.c"
     break;
 
   case 40:
-#line 193 "parser.y"
-                  { (yyval.dst_ptr) = NULL;}
-#line 1709 "parser.tab.c"
+#line 205 "parser.y"
+                  { printf("\n\n\n aya in tu miay\n"); (yyval.dst_ptr) = NULL;}
+#line 1719 "parser.tab.c"
     break;
 
   case 41:
-#line 195 "parser.y"
+#line 208 "parser.y"
                                               {
 			printf("\ndetecting function call\n");
 			(yyval.dst_ptr) = new_dstnode_functioncall((yyvsp[-4].identifier_name), number_of_args);
 			number_of_args = 1; 
 			counter = 0;
 		}
-#line 1720 "parser.tab.c"
+#line 1730 "parser.tab.c"
     break;
 
   case 42:
-#line 202 "parser.y"
+#line 215 "parser.y"
                                 { number_of_args = number_of_args + counter;}
-#line 1726 "parser.tab.c"
+#line 1736 "parser.tab.c"
     break;
 
   case 43:
-#line 203 "parser.y"
+#line 216 "parser.y"
                       { counter = 1; }
-#line 1732 "parser.tab.c"
+#line 1742 "parser.tab.c"
     break;
 
   case 44:
-#line 204 "parser.y"
+#line 217 "parser.y"
                {number_of_args = 0;}
-#line 1738 "parser.tab.c"
+#line 1748 "parser.tab.c"
     break;
 
   case 45:
-#line 207 "parser.y"
+#line 220 "parser.y"
                                        { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); }
-#line 1744 "parser.tab.c"
+#line 1754 "parser.tab.c"
     break;
 
   case 46:
-#line 208 "parser.y"
+#line 221 "parser.y"
                               { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1750 "parser.tab.c"
+#line 1760 "parser.tab.c"
     break;
 
   case 47:
-#line 209 "parser.y"
+#line 222 "parser.y"
                              { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1756 "parser.tab.c"
+#line 1766 "parser.tab.c"
     break;
 
 
-#line 1760 "parser.tab.c"
+#line 1770 "parser.tab.c"
 
       default: break;
     }
@@ -1988,7 +1998,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 212 "parser.y"
+#line 225 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -2370,6 +2380,7 @@ void print_dst(struct dst_node *dst){
 	struct dst_node *temp;
 	struct dst_node *func_ptr;
 	struct dst_node *statement_ptr;
+	struct dst_node *if_ptr;
 	temp = dst;
 	
 	if(temp == NULL){
@@ -2389,17 +2400,35 @@ void print_dst(struct dst_node *dst){
 		printf(", value or arg: %d", func_ptr->value);
 		
 		if(func_ptr->down != NULL){
-			printf("\t\n->\n");
+			printf("\n->\n");
 			printf("\tname: %s", func_ptr->down->name);
-			printf("\t, type: %s", getType(func_ptr->down->type));
-			printf("\t, value or arg: %d", func_ptr->down->value);
+			printf(", type: %s", getType(func_ptr->down->type));
+			printf(", value or arg: %d", func_ptr->down->value);
 			
 			statement_ptr = func_ptr->down;
 			while(statement_ptr->side != NULL){
-				printf("\t\n->\n");
+				printf("\n->\n");
 				printf("\tname: %s", statement_ptr->side->name);
-				printf("\t, type: %s", getType(statement_ptr->side->type));
-				printf("\t, value or arg: %d", statement_ptr->side->value);
+				printf(", type: %s", getType(statement_ptr->side->type));
+				printf(", value or arg: %d", statement_ptr->side->value);
+				
+				if(statement_ptr->side->type == IF_STATEMENT || statement_ptr->side->type == ELSE_STATEMENT){
+					if_ptr = ((statement_ptr->side)->down)->side;
+					if(if_ptr != NULL){
+						printf("\n->\n");
+						printf("\t\tname: %s", if_ptr->name);
+						printf(", type: %s", getType(if_ptr->type));
+						printf(", value or arg: %d", if_ptr->value);
+					}
+	
+					while(if_ptr->side != NULL){
+						printf("\t\n->\n");
+						printf("\t\tname: %s", if_ptr->side->name);
+						printf(", type: %s", getType(if_ptr->side->type));
+						printf(", value or arg: %d", if_ptr->side->value);
+						if_ptr = if_ptr->side;
+					}
+				}
 				statement_ptr = statement_ptr->side;
 			}
 		}

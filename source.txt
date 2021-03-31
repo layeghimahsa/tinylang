@@ -4,25 +4,20 @@ func foo (arg x)
 	int q;
 	int l;
 	int m;
-	s = 45;
-	m = 2;
-	l = 3;
-	q = s + m * l;
-	return q;
 )
 
 func mah (arg n, arg b)
 (
-	l = 5;
+	int nl;
+	int f;
+	int te;
+	f = 45;
+
 	
-	if(n == 3)
+	if(x == 5) 
 	(
-		int p;
+		z = 4;
 	)
-	
-	int mahsa;
-	foo(s);
-	return s;
 	
 )
 

@@ -57,6 +57,7 @@
 %left PLUS MINUS
 %left MULTIPLICATION DIVISION
 
+
 %start program
 
 
@@ -105,20 +106,23 @@ function_args: ARG IDENTIFIER COMMA function_args { number_of_args = number_of_a
 
 variable_declaration: INT IDENTIFIER SC
 {
+	printf("\nvariable declaration detected\n");
 	$$ = new_dstnode_variabledeclaration($2);
+	//printf("\n I want to see what is the name of identifier here %s\n", $$->name);
 	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 };
 
 
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
+	printf("\nvariable assignment detected\n");
 	current_identifier = $1;
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
 	$$->value = $$->down->value;
 	
-	printf("\ncurrent identifier is: %s\n", current_identifier);
-	printf("valueeee: %d\n",current_value);
+	//printf("\ncurrent identifier is: %s\n", current_identifier);
+	//printf("valueeee: %d\n",current_value);
 	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
@@ -140,21 +144,29 @@ expr: NUMBER  {$$ = new_dstnode_expr_number($1); $$->name = current_identifier; 
     | expr DIVISION expr { current_value = $1->value / $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
     | LPAR expr RPAR  {current_value = $2->value; $$ = new_dstnode_expr_pranthesis($2, current_value); }
     | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); current_value = $$->value;}; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 {
+	printf("\nif statement detected\n");
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	$$->name = NULL;
-	$$->value = 0;
-	$$->type = IF_STATEMENT;
-	$$->down = $3;
-	($$->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	($$->down)->side = $6;
+	node->name = NULL;
+	node->value = 0;
+	node->type = IF_STATEMENT;
+	printf("\n test!\n");
+	node->down = $3;
+	printf("\ndown!\n");
+	//printf("\nif statement confiton name! %s\n", $$->down->name );
+	//($$->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
+	(node->down)->side = $6;
+	printf("\ndown side!\n");
+	printf("\nif statement body name! %s\n", ((node->down)->side)->name );
 	//printf("\n if condition name is: %s\n", $$->down->name);
 	//printf("\n if condition operator name is: %s\n", $$->down->operator_name);
 	//printf("\n if condition value is: %d\n", $$->down->value);
 	//($$->down)->side = $6;
 	//$$->side = $6;
+	$$ = node;
 
 };
 
@@ -181,16 +193,17 @@ else_statement: ELSE LPAR statement_list RPAR
 };
 	    
 
-statement: variable_declaration {$$ = $1;}
-	 | variable_assignment {$$ = $1;} 
-	 | if_statement {$$ = $1;}
-	 | else_statement {$$ = $1;}
-	 | function_call {$$ = $1;}
-	 | function_ret {$$ = $1;};
+statement: variable_declaration {$$ = $1; printf("\n [VD] name: %s\n",$$->name);}
+	 | variable_assignment {$$ = $1; printf("\n [VA] name: %s\n",$$->name);} 
+	 | if_statement {$$ = $1; printf("\n [IF] name: %s\n",$$->name);}  //maybe ($1->down)->side;
+	 | else_statement {$$ = $1; printf("\n [EL] name: %s\n",$$->name);}
+	 | function_call {$$ = $1; printf("\n [FU] name: %s\n",$$->name);}
+	 | function_ret {$$ = $1; printf("\n [RE] name: %s\n",$$->name);};
 	 
 
 statement_list: statement statement_list { $1->side = $2; $$ = $1; }
-		| { $$ = NULL;};
+		| { printf("\n\n\n aya in tu miay\n"); $$ = NULL;};
+		
 		
 function_call: IDENTIFIER LPAR params RPAR SC {
 			printf("\ndetecting function call\n");
@@ -590,6 +603,7 @@ void print_dst(struct dst_node *dst){
 	struct dst_node *temp;
 	struct dst_node *func_ptr;
 	struct dst_node *statement_ptr;
+	struct dst_node *if_ptr;
 	temp = dst;
 	
 	if(temp == NULL){
@@ -609,17 +623,35 @@ void print_dst(struct dst_node *dst){
 		printf(", value or arg: %d", func_ptr->value);
 		
 		if(func_ptr->down != NULL){
-			printf("\t\n->\n");
+			printf("\n->\n");
 			printf("\tname: %s", func_ptr->down->name);
-			printf("\t, type: %s", getType(func_ptr->down->type));
-			printf("\t, value or arg: %d", func_ptr->down->value);
+			printf(", type: %s", getType(func_ptr->down->type));
+			printf(", value or arg: %d", func_ptr->down->value);
 			
 			statement_ptr = func_ptr->down;
 			while(statement_ptr->side != NULL){
-				printf("\t\n->\n");
+				printf("\n->\n");
 				printf("\tname: %s", statement_ptr->side->name);
-				printf("\t, type: %s", getType(statement_ptr->side->type));
-				printf("\t, value or arg: %d", statement_ptr->side->value);
+				printf(", type: %s", getType(statement_ptr->side->type));
+				printf(", value or arg: %d", statement_ptr->side->value);
+				
+				if(statement_ptr->side->type == IF_STATEMENT || statement_ptr->side->type == ELSE_STATEMENT){
+					if_ptr = ((statement_ptr->side)->down)->side;
+					if(if_ptr != NULL){
+						printf("\n->\n");
+						printf("\t\tname: %s", if_ptr->name);
+						printf(", type: %s", getType(if_ptr->type));
+						printf(", value or arg: %d", if_ptr->value);
+					}
+	
+					while(if_ptr->side != NULL){
+						printf("\t\n->\n");
+						printf("\t\tname: %s", if_ptr->side->name);
+						printf(", type: %s", getType(if_ptr->side->type));
+						printf(", value or arg: %d", if_ptr->side->value);
+						if_ptr = if_ptr->side;
+					}
+				}
 				statement_ptr = statement_ptr->side;
 			}
 		}
