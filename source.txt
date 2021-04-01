@@ -16,8 +16,16 @@ func mah (arg n, arg b)
 	
 	if(x == 5) 
 	(
-		z = 4;
+		int m;
+		mah = 4;
+	) else
+	(
+		int sal;
+		sal = 23;
 	)
+	
+	
+	int mah;
 	
 )
 

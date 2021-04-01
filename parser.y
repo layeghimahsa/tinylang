@@ -150,7 +150,7 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 {
 	printf("\nif statement detected\n");
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->name = NULL;
+	node->name = "if";
 	node->value = 0;
 	node->type = IF_STATEMENT;
 	printf("\n test!\n");
@@ -166,6 +166,18 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 	//printf("\n if condition value is: %d\n", $$->down->value);
 	//($$->down)->side = $6;
 	//$$->side = $6;
+	$$ = node;
+
+} | IF LPAR if_conditions RPAR LPAR statement_list RPAR else_statement 
+
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->name = "if_else";
+	node->value = 0;
+	node->type = IF_STATEMENT;
+	node->down = $3;
+	(node->down)->side = $6;
+	((node->down)->side)->down =$8;
 	$$ = node;
 
 };
@@ -185,11 +197,13 @@ if_condition: IDENTIFIER EQUAL NUMBER { current_identifier = $1; if_operator = $
 
 else_statement: ELSE LPAR statement_list RPAR
 {
-	$$->name = NULL;
-	$$->value = 0;
-	$$->type = ELSE_STATEMENT;
-	$$->down = $3;
-	$$->side = NULL;
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->name = "else";
+	node->value = 0;
+	node->type = ELSE_STATEMENT;
+	node->down = $3; //I was wondering why here it is ok that else does not have a statement_list. For if statement that is not true.
+	node->side = NULL;
+	$$ = node;
 };
 	    
 
@@ -604,6 +618,7 @@ void print_dst(struct dst_node *dst){
 	struct dst_node *func_ptr;
 	struct dst_node *statement_ptr;
 	struct dst_node *if_ptr;
+	struct dst_node *else_ptr;
 	temp = dst;
 	
 	if(temp == NULL){
@@ -635,29 +650,55 @@ void print_dst(struct dst_node *dst){
 				printf(", type: %s", getType(statement_ptr->side->type));
 				printf(", value or arg: %d", statement_ptr->side->value);
 				
-				if(statement_ptr->side->type == IF_STATEMENT || statement_ptr->side->type == ELSE_STATEMENT){
+				//printing if statement and statements in if body
+				if(statement_ptr->side->type == IF_STATEMENT){
 					if_ptr = ((statement_ptr->side)->down)->side;
+					else_ptr = if_ptr->down;
+					
 					if(if_ptr != NULL){
 						printf("\n->\n");
+						printf("\t\t-------------------------if---------------------------\n\n");
 						printf("\t\tname: %s", if_ptr->name);
 						printf(", type: %s", getType(if_ptr->type));
 						printf(", value or arg: %d", if_ptr->value);
 					}
 	
 					while(if_ptr->side != NULL){
+					
 						printf("\t\n->\n");
 						printf("\t\tname: %s", if_ptr->side->name);
 						printf(", type: %s", getType(if_ptr->side->type));
 						printf(", value or arg: %d", if_ptr->side->value);
 						if_ptr = if_ptr->side;
 					}
+					
+					//printing else statements if available
+					
+					if( else_ptr != NULL){
+						
+						else_ptr = else_ptr->down;
+						printf("\n->\n");
+						printf("\t\t-------------------------else-------------------------\n\n");
+						printf("\t\tname: %s", else_ptr->name);
+						printf(", type: %s", getType(else_ptr->type));
+						printf(", value or arg: %d", else_ptr->value);
+						while(else_ptr->side != NULL){
+							printf("\n->\n");
+							printf("\t\tname: %s", else_ptr->side->name);
+							printf(", type: %s", getType(else_ptr->side->type));
+							printf(", value or arg: %d", else_ptr->side->value);
+							else_ptr = else_ptr->side;
+						} 
+					}
+					
 				}
+				
 				statement_ptr = statement_ptr->side;
 			}
 		}
 		
 		func_ptr = func_ptr->side;
-		printf("\n----------------\n");
+		printf("\n---------------------------------------------------------------\n");
 	
 	}
 
