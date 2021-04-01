@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	
 	int errors = check_semantics(dst);
 	
-	if(errors != 0)
+	if(errors > 0)
 	{
 		printf("%d errors found during semantic analysis.\n",errors);
 		return 0;

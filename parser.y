@@ -515,7 +515,7 @@ int get(struct symbol_node *head, char *n){
 		current = current->next;
 	}
 	
-	
+	return -1000000; //error value for not funding a variable or function 
 	//return error!
 }
 
@@ -542,7 +542,7 @@ int check_semantics(struct dst_node *dst){
 	//error types -> 0 = duplicate function
 	int error = 0;
 	
-	//1.function declaration
+	//-----------------------------------------1.function declaration------------------------------------
 	struct dst_node *func_ptr;
 	func_ptr = dst->down;
 	while(func_ptr != NULL){
@@ -553,6 +553,7 @@ int check_semantics(struct dst_node *dst){
 		//printf("bool: %d\n", result);
 		if(result == true){
 			error += 1; //duplicate function
+			printf("-A function is declered before!\n");
 			//return error;
 		}else{
 			add_to_symtable(&symtable, func_name, func_ptr->value, 0, "null");
@@ -561,8 +562,9 @@ int check_semantics(struct dst_node *dst){
 	}
 	
 	
-	//2.variable declaration
+	//--------------------------------------2.variable declaration----------------------------------------
 	struct dst_node *statement_ptr;
+	struct dst_node *if_statement_ptr;
 	
 	func_ptr = dst->down;
 	
@@ -578,12 +580,32 @@ int check_semantics(struct dst_node *dst){
 				
 				if(result == true){
 					error += 1; //duplicate variable in matching scope
+					printf("- A variable is declered before!\n");
 					//return error;
 				} else{
 					add_to_symtable(&symtable, variable_name, 0, 1, scope);
 				}
 			}
 			
+			if(func_ptr->down->type == IF_STATEMENT){
+				if_statement_ptr = ((func_ptr->down)->down)->side;
+				if(if_statement_ptr->type == VARIABLE_DECLARATION){
+					char * variable_name = if_statement_ptr->name;
+					char * scope = statement_ptr->side->name;
+					
+					bool result = is_variable_exists(symtable, variable_name, scope);
+					
+					if(result == true){
+						error += 1; //duplicate variable in matching scope
+						printf("- A variable is declered before!\n");
+						//return error;
+					} else{
+						add_to_symtable(&symtable, variable_name, 0, 1, scope);
+					}
+				}
+			}
+			
+			//going through all other nodes
 			statement_ptr = func_ptr->down;
 			while(statement_ptr->side != NULL){
 				if(statement_ptr->side->type == VARIABLE_DECLARATION){
@@ -592,6 +614,7 @@ int check_semantics(struct dst_node *dst){
 					bool result = is_variable_exists(symtable, variable_name, scope);
 					if(result == true){
 						error += 1; //duplicate variable in matching scope
+						printf("- A variable is declered before!\n");
 						//return error;
 					}else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
@@ -599,18 +622,305 @@ int check_semantics(struct dst_node *dst){
 					//statement_ptr = statement_ptr->side;
 				}
 				
+				
+				if(statement_ptr->side->type == IF_STATEMENT){
+				
+					if_statement_ptr = ((statement_ptr->side)->down)->side;
+					if(if_statement_ptr->type == VARIABLE_DECLARATION){
+						char * variable_name = if_statement_ptr->name;
+						char * scope = statement_ptr->side->name;
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == true){
+							error += 1; //duplicate variable in matching scope
+							printf("- A variable is declered before!\n");
+							//return error;
+						} else{
+							add_to_symtable(&symtable, variable_name, 0, 1, scope);
+						}
+					}
+					
+					while(if_statement_ptr->side != NULL){
+					
+						if(if_statement_ptr->side->type == VARIABLE_DECLARATION){
+							char * variable_name = if_statement_ptr->side->name;
+							char * scope = statement_ptr->side->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == true){
+								error += 1; //duplicate variable in matching scope
+								printf("- A variable is declered before!\n");
+								//return error;
+							} else{
+								add_to_symtable(&symtable, variable_name, 0, 1, scope);
+							}
+						}
+						
+						if_statement_ptr = if_statement_ptr->side;
+					}
+				
+				}
+				
 				statement_ptr = statement_ptr->side;
 			}
+			
 		}
 		
 		func_ptr = func_ptr->side;
 	} 
 	
+
+	
+	//----------------------------------3.function use--------------------------------------------------------
+	func_ptr = dst->down;
+	
+	while(func_ptr != NULL){
+		
+		if(func_ptr->down != NULL){
+		
+			//FUNCTION CALL	
+			if((func_ptr->down)->type == FUNCTION_CALL ) { 
+			
+				char * variable_name = (func_ptr->down)->name;
+				int arg = (func_ptr->down)->value;
+				
+				if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){ //first is for arg_number incompatibility and the second one is for not existance 
+					error += 1; //function call is not allowed. 
+					if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+						printf("- Funcion ' %s 'is not declered\n", variable_name);
+					} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+						printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+					}
+				}
+			
+			}
+			
+			//FUNCTION CALL IN VARIABLE ASSIGNMENT
+			if((func_ptr->down)->type == VARIABLE_ASSIGNMENT){
+				if(((func_ptr->down)->down)->type == EXPRESSION_FUNCTIONCALL){
+					char * variable_name = ((func_ptr->down)->down)->name;
+					int arg = ((func_ptr->down)->down)->value;
+					if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+						error += 1; //function call is not allowed. 
+						if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+							printf("- Funcion ' %s 'is not declered\n", variable_name);
+						} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+							printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+						}
+					}
+				}
+			}
+			
+			//FUNCTION CALL IN IF STATEMENT
+			if((func_ptr->down)->type == IF_STATEMENT){
+			
+				if_statement_ptr = ((func_ptr->down)->down)->side;
+				
+				if(if_statement_ptr->type ==  FUNCTION_CALL){
+				
+					char * variable_name = if_statement_ptr->name;
+					int arg = if_statement_ptr->value;
+				
+					if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){   
+						error += 1; //function call is not allowed. 
+						if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+							printf("- Funcion ' %s 'is not declered\n", variable_name);
+						} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+							printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+						}
+					}	
+				
+				} //end of function call 
+				
+				if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
+					if( (if_statement_ptr->down)->type == EXPRESSION_FUNCTIONCALL){
+					
+						char * variable_name = ((if_statement_ptr)->down)->name;
+						int arg = ((if_statement_ptr)->down)->value;
+						if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+							error += 1; //function call is not allowed. 
+							if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+								printf("- Funcion ' %s 'is not declered\n", variable_name);
+							} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+								printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+							}
+						}
+					}	
+				} //end of variable assignment
+				
+				while(if_statement_ptr->side != NULL){
+				
+					if((if_statement_ptr->side)->type ==  FUNCTION_CALL){
+				
+						char * variable_name = ((if_statement_ptr->side))->name;
+						int arg = ((if_statement_ptr->side))->value;
+					
+						if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){   
+							error += 1; //function call is not allowed. 
+							if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+								printf("- Funcion ' %s 'is not declered\n", variable_name);
+							} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+								printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+							}
+						}	
+				
+					} //end of function call 
+				
+					if((if_statement_ptr->side)->type == VARIABLE_ASSIGNMENT){
+						if( ((if_statement_ptr->side)->down)->type == EXPRESSION_FUNCTIONCALL){
+						
+							char * variable_name = ((if_statement_ptr->side)->down)->name;
+							int arg = (((if_statement_ptr->side))->down)->value;
+							if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+								error += 1; //function call is not allowed. 
+								if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+									printf("- Funcion ' %s 'is not declered\n", variable_name);
+								} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+									printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+								}
+							}
+						}	
+					} //end of variable assignment
+					
+					if_statement_ptr = if_statement_ptr->side;
+				}
+			
+			}
+		
+			
+			//------------------Going through other statements in function---------------------
+			statement_ptr = func_ptr->down;
+			while(statement_ptr->side != NULL){
+			
+				if((statement_ptr->side)->type == FUNCTION_CALL) {
+			
+					char * variable_name = (statement_ptr->side)->name;
+					int arg = (statement_ptr->side)->value;
+				
+					if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){ 
+						error += 1; //function call is not allowed. 
+						if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+							printf("- Funcion ' %s 'is not declered\n", variable_name);
+						} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+							printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+						}
+					}
+			
+				}
+				
+				
+				if((statement_ptr->side)->type == VARIABLE_ASSIGNMENT){
+					if(((statement_ptr->side)->down)->type == EXPRESSION_FUNCTIONCALL){
+						char * variable_name = ((statement_ptr->side)->down)->name;
+						int arg = ((statement_ptr->side)->down)->value;
+						if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+							error += 1; //function call is not allowed. 
+							if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+								printf("- Funcion ' %s 'is not declered\n", variable_name);
+							} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+								printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+							}
+						}
+					}
+				}
+
+				
+				if((statement_ptr->side)->type == IF_STATEMENT){
+			
+					if_statement_ptr = ((statement_ptr->side)->down)->side;
+					
+					if(if_statement_ptr->type ==  FUNCTION_CALL){
+					
+						char * variable_name = if_statement_ptr->name;
+						int arg = if_statement_ptr->value;
+					
+						if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){   
+							error += 1; //function call is not allowed. 
+							if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+								printf("- Funcion ' %s 'is not declered\n", variable_name);
+							} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+								printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+							}
+						}	
+					
+					} //end of function call 
+					
+					if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
+						if( (if_statement_ptr->down)->type == EXPRESSION_FUNCTIONCALL){
+						
+							char * variable_name = (if_statement_ptr->down)->name;
+							int arg = ((if_statement_ptr)->down)->value;
+							if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+								error += 1; //function call is not allowed. 
+								if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+									printf("- Funcion ' %s 'is not declered\n", variable_name);
+								} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+									printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+								}
+							}
+						}	
+					} //end of variable assignment
+				
+					while(if_statement_ptr->side != NULL){
+					
+						if((if_statement_ptr->side)->type ==  FUNCTION_CALL){
+					
+							char * variable_name = ((if_statement_ptr->side))->name;
+							int arg = ((if_statement_ptr->side))->value;
+						
+							if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){   
+								error += 1; //function call is not allowed. 
+								if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+									printf("- Funcion ' %s 'is not declered\n", variable_name);
+								} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+									printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+								}
+							}	
+					
+						} //end of function call 
+					
+						if((if_statement_ptr->side)->type == VARIABLE_ASSIGNMENT){
+							if( ((if_statement_ptr->side)->down)->type == EXPRESSION_FUNCTIONCALL){
+							
+								char * variable_name = ((if_statement_ptr->side)->down)->name;
+								int arg = (((if_statement_ptr->side))->down)->value;
+								if(get(symtable,variable_name) != arg || get(symtable,variable_name) == -1000000 ){  
+									error += 1; //function call is not allowed. 
+									if(get(symtable,variable_name) == -1000000){ // func is not declered, therefore can't be used
+										printf("- Funcion ' %s 'is not declered\n", variable_name);
+									} else if(get(symtable,variable_name) != arg){ // function arguments is not matched
+										printf("- Funcion ' %s ' 's arguments is not compatible with function decleration\n", variable_name);
+									}
+								}
+							}	
+						} //end of variable assignment
+						
+						if_statement_ptr = if_statement_ptr->side;
+					}
+			
+				}
+
+				
+				statement_ptr = statement_ptr->side;
+			}
+			
+		}
+		
+		func_ptr = func_ptr->side;
+		
+	} 
+	
+		
+	//----------------------------------4.variable use--------------------------------------------------------
+		
+	
 	
 	return error;
 	
 	
-}
+} //end of check_semantics
 
 void print_dst(struct dst_node *dst){
 

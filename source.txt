@@ -11,13 +11,15 @@ func mah (arg n, arg b)
 	int nl;
 	int f;
 	int te;
+	int nl;
 	f = 45;
-
+	te = fooo(x);
 	
-	if(x == 5) 
+	if((x == 5) && (y > 6)) 
 	(
 		int m;
-		mah = 4;
+		int m;
+		
 	) else
 	(
 		int sal;
