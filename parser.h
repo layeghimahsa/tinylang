@@ -34,15 +34,6 @@ struct symbol_node
 
 struct symbol_node *symtable;
 
-struct variable_value_node
-{
-	char *name; //variable name
-	int value; //for function args or variable value
-	struct variable_value_node *next;
-
-};
-
-struct variable_value_node *variablenode;
 	
 //------------------------------------------------------------------------------
 
@@ -80,9 +71,9 @@ struct dst_node* new_dstnode_variableassignment(char *n);
 struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr);
 struct dst_node* new_program_dstnode();
 struct dst_node* new_dstnode_expr_number(int val);
-struct dst_node* new_dstnode_expr_identifier(char *n, int val);
-struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val);
-struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val);
+struct dst_node* new_dstnode_expr_identifier(char *n);
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second);
+struct dst_node* new_dstnode_expr_paranthesis(struct dst_node* first);
 struct dst_node* new_dstnode_expr_functioncall(char *n, int val);
 struct dst_node* new_dstnode_functioncall(char *n, int val);
 struct dst_node* new_dstnode_functionret(char *n, int val);
@@ -102,13 +93,12 @@ bool is_variable_exists(struct symbol_node *symtable, char *n, char *scope);
 int check_semantics(struct dst_node *dst);
 char *gen_label();
 
-void add_variable_value(struct variable_value_node **variablenode, char *n, int val);
-int get_variable_value(struct variable_value_node *head, char *n);
 struct IR_node *generate_IR(struct dst_node *dst);
 const char* getInstructionName(enum p_code_inst inst);
 const char* getOperandType(enum p_code_operand_type type);
 const char* getRegisterName(enum p_code_register reg);
 void print_IR(struct IR_node *IR);
+void print_expr_nested(struct dst_node *dst);
 
 
 #endif

@@ -13,12 +13,15 @@ func mah (arg n, arg b)
 	int te;
 	int nl;
 	f = 45;
+	te = (nl + 4) ;
+	x = uu;
 	te = fooo(x);
 	
 	if((x == 5) && (y > 6)) 
 	(
 		int m;
 		int m;
+		gh = mah ;
 		
 	) else
 	(

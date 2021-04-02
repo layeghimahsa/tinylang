@@ -120,10 +120,10 @@ variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
 	$$->value = $$->down->value;
+	print_expr_nested($3);
 	
 	//printf("\ncurrent identifier is: %s\n", current_identifier);
 	//printf("valueeee: %d\n",current_value);
-	add_variable_value(&variablenode, current_identifier, current_value);
 	//add_to_symtable(symtable, $1, $3);
 	 	
 } |  IDENTIFIER ASSIGNMENT expr  //this is for function call exception
@@ -132,40 +132,27 @@ variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
 	$$->value = $$->down->value;
-	add_variable_value(&variablenode, current_identifier, current_value);
 };
 
 
-expr: NUMBER  {$$ = new_dstnode_expr_number($1); $$->name = current_identifier; current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
-    | IDENTIFIER {$$ = new_dstnode_expr_identifier($1, get_variable_value(variablenode, $1)); current_value = get_variable_value(variablenode, $1);}
-    | expr PLUS expr {current_value = $1->value + $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
-    | expr MINUS expr {current_value = $1->value - $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value);}
-    | expr MULTIPLICATION expr {current_value = $1->value * $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
-    | expr DIVISION expr { current_value = $1->value / $3->value; $$ = new_dstnode_expr($1, $2, $3, current_value); }
-    | LPAR expr RPAR  {current_value = $2->value; $$ = new_dstnode_expr_pranthesis($2, current_value); }
-    | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); current_value = $$->value;}; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+expr: NUMBER  {$$ = new_dstnode_expr_number($1); } //$$->name = current_identifier; current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
+    | IDENTIFIER {$$ = new_dstnode_expr_identifier($1);}
+    | expr PLUS expr {$$ = new_dstnode_expr($1, $2, $3);} 
+    | expr MINUS expr {$$ = new_dstnode_expr($1, $2, $3);}
+    | expr MULTIPLICATION expr {$$ = new_dstnode_expr($1, $2, $3); }
+    | expr DIVISION expr {$$ = new_dstnode_expr($1, $2, $3); }
+    | LPAR expr RPAR  {$$ = new_dstnode_expr_paranthesis($2); }
+    | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); }; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 {
-	printf("\nif statement detected\n");
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "if";
 	node->value = 0;
 	node->type = IF_STATEMENT;
-	printf("\n test!\n");
 	node->down = $3;
-	printf("\ndown!\n");
-	//printf("\nif statement confiton name! %s\n", $$->down->name );
-	//($$->down)->side = (struct dst_node *) malloc(sizeof(struct dst_node));
 	(node->down)->side = $6;
-	printf("\ndown side!\n");
-	printf("\nif statement body name! %s\n", ((node->down)->side)->name );
-	//printf("\n if condition name is: %s\n", $$->down->name);
-	//printf("\n if condition operator name is: %s\n", $$->down->operator_name);
-	//printf("\n if condition value is: %d\n", $$->down->value);
-	//($$->down)->side = $6;
-	//$$->side = $6;
 	$$ = node;
 
 } | IF LPAR if_conditions RPAR LPAR statement_list RPAR else_statement 
@@ -209,14 +196,14 @@ else_statement: ELSE LPAR statement_list RPAR
 
 statement: variable_declaration {$$ = $1; printf("\n [VD] name: %s\n",$$->name);}
 	 | variable_assignment {$$ = $1; printf("\n [VA] name: %s\n",$$->name);} 
-	 | if_statement {$$ = $1; printf("\n [IF] name: %s\n",$$->name);}  //maybe ($1->down)->side;
+	 | if_statement {$$ = $1; printf("\n [IF] name: %s\n",$$->name);}
 	 | else_statement {$$ = $1; printf("\n [EL] name: %s\n",$$->name);}
 	 | function_call {$$ = $1; printf("\n [FU] name: %s\n",$$->name);}
 	 | function_ret {$$ = $1; printf("\n [RE] name: %s\n",$$->name);};
 	 
 
 statement_list: statement statement_list { $1->side = $2; $$ = $1; }
-		| { printf("\n\n\n aya in tu miay\n"); $$ = NULL;};
+		| { $$ = NULL;};
 		
 		
 function_call: IDENTIFIER LPAR params RPAR SC {
@@ -295,6 +282,7 @@ struct dst_node* new_dstnode_expr_number(int val)
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = EXPRESSION_NUMBER;
 	node->name = NULL;
+	node->operator_name = NULL; //This will be used later for detecting end of nested expr
 	node->value = val;
 	node->down = NULL;
 	node->side = NULL;
@@ -302,13 +290,14 @@ struct dst_node* new_dstnode_expr_number(int val)
 
 }
 
-struct dst_node* new_dstnode_expr_identifier(char *n, int val)
+struct dst_node* new_dstnode_expr_identifier(char *n)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = EXPRESSION_IDENTIFIER;
 	node->name = (char *) malloc(strlen(n)+1);
 	strcpy(node->name,n);
-	node->value = val;
+	node->operator_name = NULL;
+	node->value = 0;
 	node->down = NULL;
 	node->side = NULL;
 	return node;
@@ -316,31 +305,31 @@ struct dst_node* new_dstnode_expr_identifier(char *n, int val)
 }
 
 
-struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second, int val)
+struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_node* second)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node = first;
 	node->type = EXPRESSION;
-	node->value = val;
-	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->side->name = (char *) malloc(strlen(n)+1);
-	strcpy(node->side->name,n);
+	node->operator_name = (char *) malloc(strlen(n)+1);
+	strcpy(node->operator_name,n);
+	node->value = 0;
+	node->side = first;
 	node->side->side = second;
 	return node;
 
 }
 
-
-struct dst_node* new_dstnode_expr_pranthesis(struct dst_node* first, int val)
+struct dst_node* new_dstnode_expr_paranthesis(struct dst_node* first)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node = first;
-	node->value = val;
-	node->down = NULL;
-	node->side = NULL;
+	node->type = EXPRESSION;
+	node->name = NULL;
+	node->operator_name = NULL;
+	node->value = 0;
+	node->side = first;
 	return node;
 
 }
+
 
 struct dst_node* new_dstnode_expr_functioncall(char *n, int val)
 {
@@ -459,50 +448,6 @@ void add_to_symtable(struct symbol_node **symtable, char *n, int val, int type, 
 }
 
 
-void add_variable_value(struct variable_value_node **variablenode, char *n, int val){
-
-	
-
-	struct variable_value_node * new_node = (struct variable_value_node *) malloc(sizeof(struct variable_value_node)); 
-	 
-	struct variable_value_node  *last = *variablenode; 
-	  
-	new_node->value = val;
-	new_node->name = (char *) malloc(strlen(n)+1);
-	strcpy(new_node->name,n);
-	new_node->next = NULL; 
-	
-	if (*variablenode == NULL) 
-	{ 
-	   *variablenode = new_node; 
-	   return; 
-	} 
-	  
-	while (last->next != NULL) 
-		last = last->next; 
-	  
-	last->next = new_node; 
-	return; 
-
-
-}
-
-int get_variable_value(struct variable_value_node *head, char *n){
-
-	int value;
-	struct variable_value_node *current;
-	current = head;
-	
-	while(current != NULL){
-		if(strcmp(current->name,n) == 0){
-			return current->value;
-		}
-		current = current->next;
-	}
-	
-	//return error!
-}
-
 int get(struct symbol_node *head, char *n){
 	int value;
 	struct symbol_node *current;
@@ -580,8 +525,7 @@ int check_semantics(struct dst_node *dst){
 				
 				if(result == true){
 					error += 1; //duplicate variable in matching scope
-					printf("- A variable is declered before!\n");
-					//return error;
+					printf("- Variable %s is declered before!\n", variable_name);
 				} else{
 					add_to_symtable(&symtable, variable_name, 0, 1, scope);
 				}
@@ -591,13 +535,13 @@ int check_semantics(struct dst_node *dst){
 				if_statement_ptr = ((func_ptr->down)->down)->side;
 				if(if_statement_ptr->type == VARIABLE_DECLARATION){
 					char * variable_name = if_statement_ptr->name;
-					char * scope = statement_ptr->side->name;
+					char * scope = func_ptr->down->name;
 					
 					bool result = is_variable_exists(symtable, variable_name, scope);
 					
 					if(result == true){
 						error += 1; //duplicate variable in matching scope
-						printf("- A variable is declered before!\n");
+						printf("- Variable %s is declered before!\n", variable_name);
 						//return error;
 					} else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
@@ -614,12 +558,10 @@ int check_semantics(struct dst_node *dst){
 					bool result = is_variable_exists(symtable, variable_name, scope);
 					if(result == true){
 						error += 1; //duplicate variable in matching scope
-						printf("- A variable is declered before!\n");
-						//return error;
+						printf("- Variable %s is declered before!\n", variable_name);
 					}else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
-					//statement_ptr = statement_ptr->side;
 				}
 				
 				
@@ -634,7 +576,7 @@ int check_semantics(struct dst_node *dst){
 						
 						if(result == true){
 							error += 1; //duplicate variable in matching scope
-							printf("- A variable is declered before!\n");
+							printf("- Variable %s is declered before!\n", variable_name);
 							//return error;
 						} else{
 							add_to_symtable(&symtable, variable_name, 0, 1, scope);
@@ -651,7 +593,7 @@ int check_semantics(struct dst_node *dst){
 							
 							if(result == true){
 								error += 1; //duplicate variable in matching scope
-								printf("- A variable is declered before!\n");
+								printf("- Variable %s is declered before!\n", variable_name);
 								//return error;
 							} else{
 								add_to_symtable(&symtable, variable_name, 0, 1, scope);
@@ -914,7 +856,312 @@ int check_semantics(struct dst_node *dst){
 	
 		
 	//----------------------------------4.variable use--------------------------------------------------------
+	
+	func_ptr = dst->down;
+	struct dst_node *expr_ptr;
+	
+	while(func_ptr != NULL){
 		
+		if(func_ptr->down != NULL){
+		
+			//VARIABLE ASSIGNMENT	
+			if((func_ptr->down)->type == VARIABLE_ASSIGNMENT ) { 
+			
+				char * variable_name = (func_ptr->down)->name;
+				char * scope = func_ptr->name;
+				
+				bool result = is_variable_exists(symtable, variable_name, scope);
+				
+				if(result == false){
+					error += 1; //variable is not declared!
+					printf("- Variable %s is not declared before!\n", variable_name);
+				} 
+				
+				expr_ptr = (func_ptr->down)->down;
+				if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+						char * variable_name = expr_ptr->name;
+						char * scope = func_ptr->name;
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == false){
+							error += 1; 
+							printf("- Variable %s is not declared before!\n", variable_name);
+						} 
+				}
+				
+				while(expr_ptr->side != NULL){
+					if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+						char * variable_name = (expr_ptr->side)->name;
+						char * scope = func_ptr->name;
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == false){
+							error += 1; 
+							printf("- Variable %s is not declared before!\n", variable_name);
+						} 
+					}
+					
+					expr_ptr = expr_ptr->side;
+				}
+			
+			}
+			
+			//IF STATEMENT
+			if(func_ptr->down->type == IF_STATEMENT){
+			
+				if_statement_ptr = ((func_ptr->down)->down)->side;
+				
+				if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
+					char * variable_name = if_statement_ptr->name;
+					char * scope = func_ptr->down->name; //it should changeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee. maybe there are so many if else
+					
+					bool result = is_variable_exists(symtable, variable_name, scope);
+					
+					if(result == false){
+						error += 1;
+						printf("- Variable %s is not declared before!\n", variable_name);
+					} 
+					
+					expr_ptr = if_statement_ptr->down;
+					if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+							char * variable_name = expr_ptr->name;
+							char * scope = func_ptr->down->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == false){
+								error += 1; 
+								printf("- Variable %s is not declared before!\n", variable_name);
+							} 
+					}
+					
+					while(expr_ptr->side != NULL){
+						if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+							char * variable_name = (expr_ptr->side)->name;
+							char * scope = func_ptr->down->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == false){
+								error += 1; 
+								printf("- Variable %s is not declared before!\n", variable_name);
+							} 
+						}
+						
+						expr_ptr = expr_ptr->side;
+					}
+			
+						
+				}
+				
+				while(if_statement_ptr->side != NULL){
+					if(if_statement_ptr->side->type == VARIABLE_ASSIGNMENT){
+						char * variable_name = if_statement_ptr->side->name;
+						char * scope = func_ptr->down->name;
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == false){
+							error += 1;
+							printf("- Variable %s is not declared before!\n", variable_name);
+						}
+						
+						expr_ptr = if_statement_ptr->side->down;
+						if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+								char * variable_name = expr_ptr->name;
+								char * scope = func_ptr->down->name;
+								
+								bool result = is_variable_exists(symtable, variable_name, scope);
+								
+								if(result == false){
+									error += 1; 
+									printf("- Variable %s is not declared before!\n", variable_name);
+								} 
+						}
+						
+						while(expr_ptr->side != NULL){
+							if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+								char * variable_name = (expr_ptr->side)->name;
+								char * scope = func_ptr->down->name;
+								
+								bool result = is_variable_exists(symtable, variable_name, scope);
+								
+								if(result == false){
+									error += 1; 
+									printf("- Variable %s is not declared before!\n", variable_name);
+								} 
+							}
+							
+							expr_ptr = expr_ptr->side;
+						}
+					}
+					
+					if_statement_ptr = if_statement_ptr->side;
+				}
+					
+			}//end of if statement case
+			
+			
+			
+			//going through all other nodes
+			statement_ptr = func_ptr->down;
+			while(statement_ptr->side != NULL){
+				
+				//VARIABLE ASSIGNMENT	
+				if(statement_ptr->side->type == VARIABLE_ASSIGNMENT ) { 
+					
+					char * variable_name = statement_ptr->side->name;
+					char * scope = func_ptr->name;
+						
+					bool result = is_variable_exists(symtable, variable_name, scope);
+						
+					if(result == false){
+						error += 1; //variable is not declared!
+						printf("- Variable %s is not declared before!\n", variable_name);
+					} 
+						
+					expr_ptr = statement_ptr->side->down;
+					if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+						char * variable_name = expr_ptr->name;
+						char * scope = func_ptr->name;
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == false){
+							error += 1; 
+							printf("- Variable %s is not declared before!\n", variable_name);
+						} 
+					}
+						
+					while(expr_ptr->side != NULL){
+						if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+							char * variable_name = (expr_ptr->side)->name;
+							char * scope = func_ptr->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == false){
+								error += 1; 
+								printf("- Variable %s is not declared before!\n", variable_name);
+							} 
+						}
+							
+						expr_ptr = expr_ptr->side;
+					}
+				
+				}
+				
+				//IF STATEMENT
+				if(statement_ptr->side->type == IF_STATEMENT){
+				
+					if_statement_ptr = ((statement_ptr->side)->down)->side;
+					
+					if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
+						char * variable_name = if_statement_ptr->name;
+						char * scope = statement_ptr->side->name; //it should changeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee. maybe there are so many if else
+						
+						bool result = is_variable_exists(symtable, variable_name, scope);
+						
+						if(result == false){
+							error += 1;
+							printf("- Variable %s is not declared before!\n", variable_name);
+						} 
+						
+						expr_ptr = if_statement_ptr->down;
+						if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+							char * variable_name = expr_ptr->name;
+							char * scope = func_ptr->down->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == false){
+								error += 1; 
+								printf("- Variable %s is not declared before!\n", variable_name);
+							} 
+						}
+						
+						while(expr_ptr->side != NULL){
+							if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+								char * variable_name = (expr_ptr->side)->name;
+								char * scope = statement_ptr->side->name;
+								
+								bool result = is_variable_exists(symtable, variable_name, scope);
+								
+								if(result == false){
+									error += 1; 
+									printf("- Variable %s is not declared before!\n", variable_name);
+								} 
+							}
+							
+							expr_ptr = expr_ptr->side;
+						}
+				
+							
+					}
+					
+					while(if_statement_ptr->side != NULL){
+						if(if_statement_ptr->side->type == VARIABLE_ASSIGNMENT){
+							char * variable_name = if_statement_ptr->side->name;
+							char * scope = statement_ptr->side->name;
+							
+							bool result = is_variable_exists(symtable, variable_name, scope);
+							
+							if(result == false){
+								error += 1;
+								printf("- Variable %s is not declared before!\n", variable_name);
+							}
+							
+							expr_ptr = if_statement_ptr->side->down;
+							if( expr_ptr->type == EXPRESSION_IDENTIFIER ){
+								char * variable_name = expr_ptr->name;
+								char * scope = statement_ptr->side->name;
+								
+								bool result = is_variable_exists(symtable, variable_name, scope);
+								
+								if(result == false){
+									error += 1; 
+									printf("- Variable %s is not declared before!\n", variable_name);
+								} 
+							}
+							
+							while(expr_ptr->side != NULL){
+								if( (expr_ptr->side)->type == EXPRESSION_IDENTIFIER ){
+									char * variable_name = (expr_ptr->side)->name;
+									char * scope = statement_ptr->side->name;
+									
+									bool result = is_variable_exists(symtable, variable_name, scope);
+									
+									if(result == false){
+										error += 1; 
+										printf("- Variable %s is not declared before!\n", variable_name);
+									} 
+								}
+								
+								expr_ptr = expr_ptr->side;
+							}
+						}
+						
+						if_statement_ptr = if_statement_ptr->side;
+					}
+						
+				}//end of if statement case
+			
+			
+				statement_ptr = statement_ptr->side;
+			}
+			
+			
+			
+				
+		
+		}
+		
+		
+		func_ptr = func_ptr->side;
+		
+	} 	
 	
 	
 	return error;
@@ -1012,6 +1259,26 @@ void print_dst(struct dst_node *dst){
 	
 	}
 
+}
+
+
+void print_expr_nested(struct dst_node *dst){
+
+	printf("\n-----------------------------------------------------------!!!!!!!!!!!!!!!\n");
+	printf("\t\tname: %s", dst->name);
+	printf(", type: %s", getType(dst->type));
+	printf(", value or arg: %d", dst->value);
+	printf(", operator: %s", dst->operator_name);
+
+	while(dst->side != NULL){
+		printf("\n-----------------------------------------------------------!!!!!!!!!!!!!!!\n");
+		printf("\t\tname: %s", dst->side->name);
+		printf(", type: %s", getType(dst->side->type));
+		printf(", value or arg: %d", dst->side->value);
+		printf(", operator: %s", dst->side->operator_name);
+		
+		dst = dst->side;
+	}
 }
 
 char* getType(int i){
