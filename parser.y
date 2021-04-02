@@ -47,7 +47,7 @@
 %token SC COMMA
 %token ASSIGNMENT
 %token <identifier_name> EQUAL INEQUAL GREATER LESS GREATEREQUAL LESSEQUAL
-%token <identifier_name> AND OR NOT
+%token <identifier_name> ANDS ORS NOTS
 %token RETURN
 %token IF ELSE
 %token MAIN VOID
@@ -170,9 +170,9 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 };
 
 if_conditions: if_condition {$$ = new_dstnode_if_condition(current_identifier, if_operator, current_value); }
-	     | LPAR if_conditions RPAR AND LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
-	     | LPAR if_conditions RPAR OR LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
-	     | NOT LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($3, $1, NULL);} ;
+	     | LPAR if_conditions RPAR ANDS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
+	     | LPAR if_conditions RPAR ORS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
+	     | NOTS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple_not($3, $1);} ;
 
 if_condition: IDENTIFIER EQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
 	    | IDENTIFIER INEQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
@@ -321,9 +321,10 @@ struct dst_node* new_dstnode_expr(struct dst_node* first, char *n, struct dst_no
 struct dst_node* new_dstnode_expr_paranthesis(struct dst_node* first)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = EXPRESSION;
+	node->type = EXPRESSION_PARANTHESIS;
 	node->name = NULL;
-	node->operator_name = NULL;
+	node->operator_name = (char *) malloc(strlen(first->operator_name)+1);
+	strcpy(node->operator_name, first->operator_name);
 	node->value = 0;
 	node->side = first;
 	return node;
@@ -389,27 +390,25 @@ struct dst_node* new_dstnode_if_condition(char *n, char *operator ,int val)
 struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char *operator, struct dst_node* second)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node = first;
 	node->type = IF_CONDITION_MULTIPLE;
-	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->side->operator_name = (char *) malloc(strlen(operator)+1);
-	strcpy(node->side->operator_name,operator);
+	node->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->operator_name,operator);
+	node->side = first;
 	node->side->side = second;
 	return node;
 
 }
 
-/*struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, char *operator)
+struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, char *operator)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node = first;
-	node->type = IF_CONDITION_MULTIPLE;
-	node->side = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->side->operator_name = (char *) malloc(strlen(operator)+1);
-	strcpy(node->side->operator,operator);
+	node->side = first;
+	node->type = IF_CONDITION_MULTIPLE_NOT;
+	node->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->operator_name,operator);
 	return node;
 
-}*/
+}
 
 
 
@@ -1264,14 +1263,14 @@ void print_dst(struct dst_node *dst){
 
 void print_expr_nested(struct dst_node *dst){
 
-	printf("\n-----------------------------------------------------------!!!!!!!!!!!!!!!\n");
+	printf("\n------------------------------------------------------------------------------------\n");
 	printf("\t\tname: %s", dst->name);
 	printf(", type: %s", getType(dst->type));
 	printf(", value or arg: %d", dst->value);
 	printf(", operator: %s", dst->operator_name);
 
 	while(dst->side != NULL){
-		printf("\n-----------------------------------------------------------!!!!!!!!!!!!!!!\n");
+		printf("\n------------------------------------------------------------------------------------\n");
 		printf("\t\tname: %s", dst->side->name);
 		printf(", type: %s", getType(dst->side->type));
 		printf(", value or arg: %d", dst->side->value);
@@ -1316,20 +1315,26 @@ char* getType(int i){
 	case 9:
 		name = "IF_CONDITION_MULTIPLE";
 		break;
-	case 10:
+	case 10: 
+		name = "IF_CONDITION_MULTIPLE_NOT";
+		break;
+	case 11:
 		name = "ELSE_STATEMENT";
 		break;	
-	case 11: 
+	case 12: 
 		name = "EXPRESSION";
 		break;	
-	case 12: 
+	case 13: 
 		name = "EXPRESSION_NUMBER";
 		break;	
-	case 13: 
+	case 14: 
 		name = "EXPRESSION_IDENTIFIER";
 		break;	
-	case 14:
+	case 15:
 		name = "EXPRESSION_FUNCTIONCALL";
+		break;
+	case 16: 
+		name = "EXPRESSION_PARANTHESIS";
 		break;					
 	default: 
 		break;	
@@ -1426,7 +1431,13 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		new_prog_IR_node->instruction = CALL;
 		new_prog_IR_node->operand_type = IDENTIFIERS;
 		new_prog_IR_node->p_code_operand.identifier = dst->name;
-		new_prog_IR_node->next = generate_IR(dst->down);
+		new_prog_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+		char *label_here = gen_label();
+		new_prog_IR_node->next->label = label_here;
+		new_prog_IR_node->next->instruction = JMP;
+		new_prog_IR_node->next->operand_type = IDENTIFIERS;
+		new_prog_IR_node->next->p_code_operand.identifier = "here";
+		new_prog_IR_node->next->next = generate_IR(dst->down);
 		return new_prog_IR_node;
 	}
 	
@@ -1435,50 +1446,55 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	switch(dst->type)
 	{
 	
-		case FUNCTION: ;//this should be changed to function call later
+		case FUNCTION_CALL: ;//this should be changed to function call later
 			printf("in function case.\n");
 			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_call_IR_node->instruction = CALL;
 			new_func_call_IR_node->operand_type = IDENTIFIERS;
 			new_func_call_IR_node->p_code_operand.identifier = dst->name;
 			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
+			return new_func_call_IR_node;
 			break;
 		
-		case RETURN: ;//this should be added and definitely be changed.
+		case FUNCTION_RET: ;//this should be added and definitely be changed.
 			struct IR_node *new_func_ret_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_ret_IR_node->instruction = RET;
 			new_func_ret_IR_node->operand_type = CONSTANT;
 			new_func_ret_IR_node->p_code_operand.constant = dst->value;
+			return new_func_ret_IR_node;
 			break;
-			
-			
-			
+		
+		case FUNCTION: ;
+			struct IR_node *new_func_IR_node = generate_IR(dst->down); //p-code for the first statement in function body
+			return new_func_IR_node;
+			break;
+					
 		case VARIABLE_ASSIGNMENT: ;
 			struct IR_node *new_IR_node = generate_IR(dst->down);
 			struct IR_node *last_node = new_IR_node;
-			while(last_node->next != (struct IR_node *)0)
+			while(last_node->next != NULL)
 				last_node = last_node->next;
 			last_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node = last_node->next;
 			last_node->instruction = POP;
 			last_node->operand_type = IDENTIFIERS;
 			last_node->p_code_operand.identifier = strdup(dst->name);
-			last_node->next = generate_IR(dst->side);
 			return new_IR_node;
 			break;
-		/*case VARIABLE_DECLARATION:
-			struct IR_node *new_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
-			struct IR_node *last_node = new_IR_node;
-			while(last_node->next != (struct IR_node *)0)
-				last_node = last_node->next;
-			last_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			last_node = last_node->next;
-			last_node->instruction = POP;
-			last_node->operand_type = IDENTIFIERS;
-			last_node->p_code_operand.identifier = strdup(dst->name);
-			last_node->next = generate_IR(dst->side);
-			return new_IR_node;
-			break;*/
+			
+		case VARIABLE_DECLARATION: ;
+			struct IR_node *new_IR_dec_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			struct IR_node *last_node_dec = new_IR_dec_node;
+			while(last_node_dec->next != NULL)
+				last_node_dec = last_node_dec->next;
+			last_node_dec->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_dec = last_node_dec->next;
+			last_node_dec->instruction = POP;
+			last_node_dec->operand_type = IDENTIFIERS;
+			last_node_dec->p_code_operand.identifier = strdup(dst->name);
+			last_node_dec->next = generate_IR(dst->side);
+			return new_IR_dec_node;
+			break;
 			
 		case IF_STATEMENT: ;
 			char *label_if_begin = gen_label();
@@ -1493,7 +1509,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF->instruction = BRCF;
 			last_node_IF->operand_type = IDENTIFIERS;
 			last_node_IF->p_code_operand.identifier = label_if_end;
-			last_node_IF->next = generate_IR(dst->side); //p-code for if body
+			last_node_IF->next = generate_IR(dst->down->side); //p-code for if body
 			struct IR_node *last_node_IF_body = last_node_IF->next;
 			while(last_node_IF_body->next != NULL)
 				last_node_IF_body = last_node_IF_body->next;
@@ -1502,67 +1518,185 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->instruction = NOP;
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
+			return new_IF_condition_IR_node;
 			break;
+		
+		case IF_CONDITION: ;
+			struct IR_node *new_IF_condition_single_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_IF_condition_single_IR_node->instruction = PUSH; 
+			new_IF_condition_single_IR_node->operand_type = CONSTANT;
+			new_IF_condition_single_IR_node->p_code_operand.constant = dst->value;
+			new_IF_condition_single_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_IF_condition_single_IR_node->next->instruction = PUSH; 
+			new_IF_condition_single_IR_node->next->operand_type = IDENTIFIERS;
+			new_IF_condition_single_IR_node->next->p_code_operand.identifier = dst->name;
+			new_IF_condition_single_IR_node->next->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			
+			if(strcmp(dst->operator_name,"EQUAL") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = EQUALS;
+			} else if(strcmp(dst->operator_name,"INEQUAL") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = NOTEQUAL;
+			} else if(strcmp(dst->operator_name,"GREATER") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = GREATHER;
+			} else if(strcmp(dst->operator_name,"LESS") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = LESSTHAN;
+			} else if(strcmp(dst->operator_name,"GREATEREQUAL") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = GREATER_EQUAL;
+			} else if(strcmp(dst->operator_name,"LESSEQUAL") == 0){
+				new_IF_condition_single_IR_node->next->next->instruction = LESS_EQUAL;
+			} 
+			
+			return new_IF_condition_single_IR_node;
+			break;
+		
+		case IF_CONDITION_MULTIPLE: ;
+			struct IR_node *new_IF_condition_multiple_first_IR_node = generate_IR(dst->side); //p-code for first if condition result
+			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
+			while(last_node_fisrt_if_cond->next != NULL)
+				last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
+			last_node_fisrt_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
+			last_node_fisrt_if_cond->instruction = PUSH; 
+			last_node_fisrt_if_cond->operand_type = CONSTANT;
+			last_node_fisrt_if_cond->p_code_operand.constant = dst->side->value;
+			
+			
+			struct IR_node *new_IF_condition_multiple_second_IR_node = generate_IR(dst->side->side); //p-code for second if condition result
+			struct IR_node *last_node_second_if_cond = new_IF_condition_multiple_second_IR_node;
+			while(last_node_second_if_cond->next != NULL)
+				last_node_second_if_cond = last_node_second_if_cond->next;
+			last_node_second_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_if_cond = last_node_second_if_cond->next;
+			last_node_second_if_cond->instruction = PUSH; 
+			last_node_second_if_cond->operand_type = CONSTANT;
+			last_node_second_if_cond->p_code_operand.constant = dst->side->side->value;
+			
+			last_node_fisrt_if_cond->next = last_node_second_if_cond;
+			struct IR_node *new_operation_cond_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_second_if_cond->next = new_operation_cond_IR_node;
+			
+			if(strcmp(dst->operator_name,"AND") == 0){
+				new_operation_cond_IR_node->instruction = AND;
+			} else if(strcmp(dst->operator_name,"OR") == 0){
+				new_operation_cond_IR_node->instruction = OR;
+			} 
+			
+			return new_IF_condition_multiple_first_IR_node;
+			break;
+			
+			
+		case IF_CONDITION_MULTIPLE_NOT: ;
+			struct IR_node *new_IF_condition_multiple_not_IR_node = generate_IR(dst->side); //p-code for (not) if condition result
+			struct IR_node *last_node_not_if_cond = new_IF_condition_multiple_not_IR_node;
+			while(last_node_not_if_cond->next != NULL)
+				last_node_not_if_cond = last_node_not_if_cond->next;
+			last_node_not_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_not_if_cond = last_node_not_if_cond->next;
+			last_node_not_if_cond->instruction = PUSH; 
+			last_node_not_if_cond->operand_type = CONSTANT;
+			last_node_not_if_cond->p_code_operand.constant = dst->side->value;
+			
+			struct IR_node *new_operation_not_cond_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_not_if_cond->next = new_operation_not_cond_IR_node;
+			new_operation_not_cond_IR_node->instruction = NOT;
+			
+			return new_IF_condition_multiple_not_IR_node;
+			break;	
 			
 		case ELSE_STATEMENT: ;
 			struct IR_node *new_else_IR_node = generate_IR(dst->down); //p-code for else body
+			return new_else_IR_node;
 			break;
 			
 			
 		case EXPRESSION: ;
 			
-			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side->side); //p-code for first expression result
+			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side); //p-code for first expression result
 			struct IR_node *last_node_fisrt_expr = new_first_expr_IR_node;
 			while(last_node_fisrt_expr->next != NULL)
 				last_node_fisrt_expr = last_node_fisrt_expr->next;
 			last_node_fisrt_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_fisrt_expr = last_node_fisrt_expr->next;
 			last_node_fisrt_expr->instruction = PUSH;
-			last_node_fisrt_expr->operand_type = CONSTANT;
-			last_node_fisrt_expr->p_code_operand.constant = dst->side->side->value;
+			if(dst->side->type == EXPRESSION_NUMBER){
+				last_node_fisrt_expr->operand_type = CONSTANT;
+				last_node_fisrt_expr->p_code_operand.constant = dst->side->value;
+			} else if(dst->side->type == EXPRESSION_IDENTIFIER){
+				last_node_fisrt_expr->operand_type = IDENTIFIERS;
+				last_node_fisrt_expr->p_code_operand.identifier = dst->side->name;
+			}
 			
-			struct IR_node *new_second_expr_IR_node = generate_IR(dst); //p-code for second expression result
+			struct IR_node *new_second_expr_IR_node = generate_IR(dst->side->side); //p-code for second expression result
 			struct IR_node *last_node_second_expr = new_second_expr_IR_node;
 			while(last_node_second_expr->next != NULL)
 				last_node_second_expr = last_node_second_expr->next;
 			last_node_second_expr->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_second_expr = last_node_second_expr->next;
 			last_node_second_expr->instruction = PUSH;
-			last_node_second_expr->operand_type = CONSTANT;
-			last_node_second_expr->p_code_operand.constant = dst->value;
+			if(dst->side->side->type == EXPRESSION_NUMBER){
+				last_node_second_expr->operand_type = CONSTANT;
+				last_node_second_expr->p_code_operand.constant = dst->side->side->value;
+			} else if(dst->side->side->type == EXPRESSION_IDENTIFIER){
+				last_node_fisrt_expr->operand_type = IDENTIFIERS;
+				last_node_fisrt_expr->p_code_operand.identifier = dst->side->side->name;
+			}
+
 			
 			last_node_fisrt_expr->next = last_node_second_expr;
 			struct IR_node *new_operation_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_second_expr->next = new_operation_IR_node;
 			
 			
-			if(strcmp(dst->side->name,"PLUS") == 0){
+			if(strcmp(dst->operator_name,"PLUS") == 0){
 				new_operation_IR_node->instruction = ADD;
-			} else if(strcmp(dst->side->name,"MINUS") == 0){
+			} else if(strcmp(dst->operator_name,"MINUS") == 0){
 				new_operation_IR_node->instruction = SUB;
-			} else if(strcmp(dst->side->name,"MULTIPLICATION") == 0){
+			} else if(strcmp(dst->operator_name,"MULTIPLICATION") == 0){
 				new_operation_IR_node->instruction = MUL;
-			} else if(strcmp(dst->side->name,"DIVISION") == 0){
+			} else if(strcmp(dst->operator_name,"DIVISION") == 0){
 				new_operation_IR_node->instruction = DIV;
 			}
 			
-			/*switch(dst->side->name){
-				
-				case "PLUS":
-					new_operation_IR_node->instruction = ADD;
-					break;
-				case "MINUS":
-					new_operation_IR_node->instruction = SUB;
-					break;
-				case "MULTIPLICATION":
-					new_operation_IR_node->instruction = MUL;
-					break;
-				case "DIVISION":
-					new_operation_IR_node->instruction = DIV;
-					break;
-				default:
-					break; //never happens
-			}*/
+			return new_first_expr_IR_node;
+			
+			break;
+			
+			
+		case EXPRESSION_PARANTHESIS: ;
+			
+			struct IR_node *new_first_expr_par_IR_node = generate_IR(dst->side); //p-code for first expression result
+			struct IR_node *last_node_fisrt_expr_par = new_first_expr_par_IR_node;
+			while(last_node_fisrt_expr_par->next != NULL)
+				last_node_fisrt_expr_par = last_node_fisrt_expr_par->next;
+			last_node_fisrt_expr_par->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_expr_par = last_node_fisrt_expr_par->next;
+			if(dst->side->type == EXPRESSION_NUMBER){
+				last_node_fisrt_expr_par->instruction = PUSH;
+				last_node_fisrt_expr_par->operand_type = CONSTANT;
+				last_node_fisrt_expr_par->p_code_operand.constant = dst->side->value;
+			} else if(dst->side->type == EXPRESSION_IDENTIFIER){
+				last_node_fisrt_expr_par->instruction = PUSH;
+				last_node_fisrt_expr_par->operand_type = IDENTIFIERS;
+				last_node_fisrt_expr_par->p_code_operand.identifier = dst->side->name;
+			} 
+			
+
+
+			struct IR_node *new_operation_par_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_expr_par->next = new_operation_par_IR_node;
+			
+			
+			if(strcmp(dst->operator_name,"PLUS") == 0){
+				new_operation_par_IR_node->instruction = ADD;
+			} else if(strcmp(dst->operator_name,"MINUS") == 0){
+				new_operation_par_IR_node->instruction = SUB;
+			} else if(strcmp(dst->operator_name,"MULTIPLICATION") == 0){
+				new_operation_par_IR_node->instruction = MUL;
+			} else if(strcmp(dst->operator_name,"DIVISION") == 0){
+				new_operation_par_IR_node->instruction = DIV;
+			}
+			
+			return new_first_expr_par_IR_node;
 			
 			break;
 			
@@ -1571,12 +1705,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			new_number_expr_IR_node->instruction = PUSH;
 			new_number_expr_IR_node->operand_type = CONSTANT;
 			new_number_expr_IR_node->p_code_operand.constant = dst->value;
-			//the code below seems to be wrong because we need variable assignment to pop
-			/*new_number_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			new_number_expr_IR_node = new_number_expr_IR_node->next;
-			new_number_expr_IR_node->instruction = POP;
-			new_number_expr_IR_node->operand_type = IDENTIFIERS;
-			new_number_expr_IR_node->p_code_operand.identifier = dst->name;*/
+			return new_number_expr_IR_node;
 			break;
 			
 		case EXPRESSION_IDENTIFIER: ;
@@ -1584,12 +1713,17 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			new_identifier_expr_IR_node->instruction = PUSH;
 			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
 			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
-			new_identifier_expr_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			new_identifier_expr_IR_node = new_identifier_expr_IR_node->next;
-			new_identifier_expr_IR_node->instruction = POP;
-			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
-			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
+			return new_identifier_expr_IR_node;
 			break;
+			
+		//TODOs
+		//case EXPRESSION_FUNCTIONCALL:
+		
+		case FUNCTION_HEADER: // should never happens
+			break;
+		
+		default:
+			break;	
 	
 			
 					

@@ -818,17 +818,17 @@ YY_RULE_SETUP
 case 12:
 YY_RULE_SETUP
 #line 21 "scanner.l"
-{yylval.identifier_name = strdup(yytext); return AND;}
+{yylval.identifier_name = strdup(yytext); return ANDS;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 22 "scanner.l"
-{yylval.identifier_name = strdup(yytext); return OR;}
+{yylval.identifier_name = strdup(yytext); return ORS;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 23 "scanner.l"
-{yylval.identifier_name = strdup(yytext); return NOT;}
+{yylval.identifier_name = strdup(yytext); return NOTS;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP

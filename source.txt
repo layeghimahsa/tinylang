@@ -11,17 +11,12 @@ func mah (arg n, arg b)
 	int nl;
 	int f;
 	int te;
-	int nl;
 	f = 45;
-	te = (nl + 4) ;
-	x = uu;
-	te = fooo(x);
+	te = (nl * 4) + 5;
 	
 	if((x == 5) && (y > 6)) 
 	(
 		int m;
-		int m;
-		gh = mah ;
 		
 	) else
 	(
@@ -38,6 +33,5 @@ func hel (void)
 (
 	int z;	
 	int s;
-	s = foo(z);
 	return 0;
 )

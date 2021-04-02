@@ -41,9 +41,9 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 	
-	//struct IR_node *IR = NULL;
-	//IR = generate_IR(dst);
-	//print_IR(IR);
+	struct IR_node *IR = NULL;
+	IR = generate_IR(dst);
+	print_IR(IR);
 	
 	//print_symboltable(symtable);
 }
