@@ -23,6 +23,7 @@
 %type <dst_ptr> function_header
 %type <dst_ptr> function
 %type <dst_ptr> if_statement
+%type <dst_ptr> if_condition
 %type <dst_ptr> if_conditions
 %type <dst_ptr> else_statement
 %type <dst_ptr> program
@@ -153,6 +154,7 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 	node->type = IF_STATEMENT;
 	node->down = $3;
 	(node->down)->side = $6;
+	node->side = NULL;
 	$$ = node;
 
 } | IF LPAR if_conditions RPAR LPAR statement_list RPAR else_statement 
@@ -163,23 +165,25 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 	node->value = 0;
 	node->type = IF_STATEMENT;
 	node->down = $3;
+	printf("\n if statement down is %s\n", node->down->name);
+	node->side = $8;
 	(node->down)->side = $6;
-	((node->down)->side)->down =$8;
+	//((node->down)->side)->down =$8;
 	$$ = node;
 
 };
 
-if_conditions: if_condition {$$ = new_dstnode_if_condition(current_identifier, if_operator, current_value); }
+if_conditions: if_condition {$$->down = new_dstnode_if_condition(current_identifier, if_operator, current_value);}
 	     | LPAR if_conditions RPAR ANDS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
 	     | LPAR if_conditions RPAR ORS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
 	     | NOTS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple_not($3, $1);} ;
 
-if_condition: IDENTIFIER EQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
-	    | IDENTIFIER INEQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
-	    | IDENTIFIER GREATER NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
-	    | IDENTIFIER LESS NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
-	    | IDENTIFIER GREATEREQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; }
-	    | IDENTIFIER LESSEQUAL NUMBER { current_identifier = $1; if_operator = $2; current_value = $3; };
+if_condition: IDENTIFIER EQUAL NUMBER {$$ = new_dstnode_if_condition($1, $2, $3); current_identifier=$1; if_operator=$2; current_value = $3;}
+	   |IDENTIFIER INEQUAL NUMBER {$$ = new_dstnode_if_condition($1, $2, $3); current_identifier=$1; if_operator=$2; current_value =$3;}
+	   |IDENTIFIER GREATER NUMBER {$$ = new_dstnode_if_condition($1, $2, $3); current_identifier=$1; if_operator=$2; current_value =$3;}
+	   |IDENTIFIER LESS NUMBER {$$ = new_dstnode_if_condition($1, $2, $3);  current_identifier=$1; if_operator = $2; current_value = $3; }
+	   |IDENTIFIER GREATEREQUAL NUMBER {$$ = new_dstnode_if_condition($1, $2, $3); current_identifier=$1; if_operator=$2; current_value =$3;}
+	   |IDENTIFIER LESSEQUAL NUMBER {$$ = new_dstnode_if_condition($1, $2, $3); current_identifier=$1; if_operator=$2; current_value = $3;};
 	   
 
 else_statement: ELSE LPAR statement_list RPAR
@@ -391,10 +395,13 @@ struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char 
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->type = IF_CONDITION_MULTIPLE;
+	node->name = "if_condition_multiple";
 	node->operator_name = (char *) malloc(strlen(operator)+1);
 	strcpy(node->operator_name,operator);
-	node->side = first;
-	node->side->side = second;
+	node->down = first;
+	//printf("\n1. in dst: type of dst node is %s\n", getType(node->side->type));
+	(node->down)->side = second;
+	//printf("2. in dst: type of dst node is %s\n", getType(node->side->side->type));
 	return node;
 
 }
@@ -402,7 +409,7 @@ struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char 
 struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, char *operator)
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->side = first;
+	node->down = first;
 	node->type = IF_CONDITION_MULTIPLE_NOT;
 	node->operator_name = (char *) malloc(strlen(operator)+1);
 	strcpy(node->operator_name,operator);
@@ -410,6 +417,21 @@ struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, c
 
 }
 
+
+struct dst_node* new_dstnode_operator(char *n, char *operator, int val)
+{
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->type = OPERATOR;
+	node->name = (char *) malloc(strlen(n)+1);
+	strcpy(node->name,n);
+	node->operator_name = (char *) malloc(strlen(operator)+1);
+	strcpy(node->operator_name,operator);
+	node->value = val;
+	node->down = NULL;
+	node->side = NULL;
+	return node;
+
+}
 
 
 //--------------------------------------------------------------------------------------------------------------------------
@@ -1174,6 +1196,7 @@ void print_dst(struct dst_node *dst){
 	struct dst_node *func_ptr;
 	struct dst_node *statement_ptr;
 	struct dst_node *if_ptr;
+	struct dst_node *if_cond;
 	struct dst_node *else_ptr;
 	temp = dst;
 	
@@ -1209,7 +1232,24 @@ void print_dst(struct dst_node *dst){
 				//printing if statement and statements in if body
 				if(statement_ptr->side->type == IF_STATEMENT){
 					if_ptr = ((statement_ptr->side)->down)->side;
+					if_cond = ((statement_ptr->side)->down)->down;
 					else_ptr = if_ptr->down;
+					
+					if(if_cond != NULL){
+						printf("\n->\n");
+						printf("\t\tname: %s", if_cond->name);
+						printf(", type: %s", getType(if_cond->type));
+						printf(", value or arg: %d", if_cond->value);
+					}
+	
+					while(if_cond->side != NULL){
+					
+						printf("\t\n->\n");
+						printf("\t\tname: %s", if_cond->side->name);
+						printf(", type: %s", getType(if_cond->side->type));
+						printf(", value or arg: %d", if_cond->side->value);
+						if_cond = if_cond->side;
+					}
 					
 					if(if_ptr != NULL){
 						printf("\n->\n");
@@ -1335,7 +1375,10 @@ char* getType(int i){
 		break;
 	case 16: 
 		name = "EXPRESSION_PARANTHESIS";
-		break;					
+		break;	
+	case 17: 
+		name = "OPERATOR";
+		break;				
 	default: 
 		break;	
 		
@@ -1447,16 +1490,18 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	{
 	
 		case FUNCTION_CALL: ;//this should be changed to function call later
-			printf("in function case.\n");
+			printf("in function call case.\n");
 			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_call_IR_node->instruction = CALL;
 			new_func_call_IR_node->operand_type = IDENTIFIERS;
 			new_func_call_IR_node->p_code_operand.identifier = dst->name;
 			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
+			//new_func_call_IR_node->next = generate_IR(dst->side);
 			return new_func_call_IR_node;
 			break;
 		
 		case FUNCTION_RET: ;//this should be added and definitely be changed.
+			printf("in function return case.\n");
 			struct IR_node *new_func_ret_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_ret_IR_node->instruction = RET;
 			new_func_ret_IR_node->operand_type = CONSTANT;
@@ -1465,11 +1510,18 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case FUNCTION: ;
+			printf("in function case.\n");
 			struct IR_node *new_func_IR_node = generate_IR(dst->down); //p-code for the first statement in function body
+			struct IR_node *last_node_func = new_func_IR_node;
+			while(last_node_func->next != NULL)
+				last_node_func = last_node_func->next;
+			last_node_func->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_func->next = generate_IR(dst->side);
 			return new_func_IR_node;
 			break;
 					
 		case VARIABLE_ASSIGNMENT: ;
+			printf("in variable assignment case.\n");
 			struct IR_node *new_IR_node = generate_IR(dst->down);
 			struct IR_node *last_node = new_IR_node;
 			while(last_node->next != NULL)
@@ -1479,10 +1531,12 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node->instruction = POP;
 			last_node->operand_type = IDENTIFIERS;
 			last_node->p_code_operand.identifier = strdup(dst->name);
+			last_node->next = generate_IR(dst->side);
 			return new_IR_node;
 			break;
 			
 		case VARIABLE_DECLARATION: ;
+			printf("in variable declaration case.\n");
 			struct IR_node *new_IR_dec_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			struct IR_node *last_node_dec = new_IR_dec_node;
 			while(last_node_dec->next != NULL)
@@ -1497,6 +1551,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case IF_STATEMENT: ;
+			printf("in if statement case.\n");
 			char *label_if_begin = gen_label();
 			char *label_if_end = gen_label();
 			struct IR_node *new_IF_condition_IR_node = generate_IR(dst->down); //p-code for if condition
@@ -1518,10 +1573,12 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->instruction = NOP;
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
+			last_node_IF_body->next = generate_IR(dst->side); //p-code for else
 			return new_IF_condition_IR_node;
 			break;
 		
 		case IF_CONDITION: ;
+			printf("in if condition case.\n");
 			struct IR_node *new_IF_condition_single_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_IF_condition_single_IR_node->instruction = PUSH; 
 			new_IF_condition_single_IR_node->operand_type = CONSTANT;
@@ -1535,11 +1592,11 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			if(strcmp(dst->operator_name,"EQUAL") == 0){
 				new_IF_condition_single_IR_node->next->next->instruction = EQUALS;
 			} else if(strcmp(dst->operator_name,"INEQUAL") == 0){
-				new_IF_condition_single_IR_node->next->next->instruction = NOTEQUAL;
+				new_IF_condition_single_IR_node->next->next->instruction = NOTEQUALS;
 			} else if(strcmp(dst->operator_name,"GREATER") == 0){
-				new_IF_condition_single_IR_node->next->next->instruction = GREATHER;
+				new_IF_condition_single_IR_node->next->next->instruction = GREATER_THAN;
 			} else if(strcmp(dst->operator_name,"LESS") == 0){
-				new_IF_condition_single_IR_node->next->next->instruction = LESSTHAN;
+				new_IF_condition_single_IR_node->next->next->instruction = LESS_THAN;
 			} else if(strcmp(dst->operator_name,"GREATEREQUAL") == 0){
 				new_IF_condition_single_IR_node->next->next->instruction = GREATER_EQUAL;
 			} else if(strcmp(dst->operator_name,"LESSEQUAL") == 0){
@@ -1550,7 +1607,11 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case IF_CONDITION_MULTIPLE: ;
-			struct IR_node *new_IF_condition_multiple_first_IR_node = generate_IR(dst->side); //p-code for first if condition result
+			printf("in if condition multiple case.\n");
+			printf("0.type of dst node is %s\n", getType(dst->type));
+			printf("1.type of dst node is %s - %s\n", getType(dst->down->type), dst->down->name);
+			struct IR_node *new_IF_condition_multiple_first_IR_node = generate_IR(dst->down); //p-code for first if condition result
+			printf("2. type of dst node is %s", getType(dst->side->type));
 			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
 			while(last_node_fisrt_if_cond->next != NULL)
 				last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
@@ -1561,7 +1622,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_fisrt_if_cond->p_code_operand.constant = dst->side->value;
 			
 			
-			struct IR_node *new_IF_condition_multiple_second_IR_node = generate_IR(dst->side->side); //p-code for second if condition result
+			struct IR_node *new_IF_condition_multiple_second_IR_node = generate_IR(dst->down->side); //p-code for second if condition result
 			struct IR_node *last_node_second_if_cond = new_IF_condition_multiple_second_IR_node;
 			while(last_node_second_if_cond->next != NULL)
 				last_node_second_if_cond = last_node_second_if_cond->next;
@@ -1586,6 +1647,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			
 		case IF_CONDITION_MULTIPLE_NOT: ;
+			printf("in if condition not case.\n");
 			struct IR_node *new_IF_condition_multiple_not_IR_node = generate_IR(dst->side); //p-code for (not) if condition result
 			struct IR_node *last_node_not_if_cond = new_IF_condition_multiple_not_IR_node;
 			while(last_node_not_if_cond->next != NULL)
@@ -1602,14 +1664,44 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			return new_IF_condition_multiple_not_IR_node;
 			break;	
+		
+		/*case OPERATOR:
+			printf("in operator case.\n");
+			struct IR_node *new_operator_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_operator_IR_node->instruction = PUSH;
+			new_operator_IR_node->operand_type = CONSTANT;
+			new_operator_IR_node->p_code_operand.constant = dst->value;
+			new_operator_IR_node->next->instruction = PUSH;
+			new_operator_IR_node->next->operand_type = IDENTIFIERS;
+			new_operator_IR_node->next->p_code_operand.identifier = dst->name;
+			
+			if(strcmp(dst->operator_name,"EQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = EQUALS;
+			} else if(strcmp(dst->operator_name,"INEQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = NOTEQUALS;
+			} else if(strcmp(dst->operator_name,"GREATER") == 0){
+				new_operator_IR_node->next->next->instruction = GREATER_THAN;
+			} else if(strcmp(dst->operator_name,"LESS") == 0){
+				new_operator_IR_node->next->next->instruction = LESS_THAN;
+			} else if(strcmp(dst->operator_name,"GREATEREQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = GREATER_EQUAL;
+			} else if(strcmp(dst->operator_name,"LESSEQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = LESS_EQUAL;
+			} 
+			
+			return new_operator_IR_node;
+			break;*/
 			
 		case ELSE_STATEMENT: ;
+			printf("in else statement case.\n");
 			struct IR_node *new_else_IR_node = generate_IR(dst->down); //p-code for else body
+			new_else_IR_node->next = generate_IR(dst->side);
 			return new_else_IR_node;
 			break;
 			
 			
 		case EXPRESSION: ;
+			printf("in expression case.\n");
 			
 			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side); //p-code for first expression result
 			struct IR_node *last_node_fisrt_expr = new_first_expr_IR_node;
@@ -1663,6 +1755,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			
 		case EXPRESSION_PARANTHESIS: ;
+			printf("in expression paranthesis case.\n");
 			
 			struct IR_node *new_first_expr_par_IR_node = generate_IR(dst->side); //p-code for first expression result
 			struct IR_node *last_node_fisrt_expr_par = new_first_expr_par_IR_node;
@@ -1701,6 +1794,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case EXPRESSION_NUMBER: ;
+			printf("in expression number case.\n");
 			struct IR_node *new_number_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_number_expr_IR_node->instruction = PUSH;
 			new_number_expr_IR_node->operand_type = CONSTANT;
@@ -1709,20 +1803,52 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case EXPRESSION_IDENTIFIER: ;
+			printf("in expression identifier case.\n");
 			struct IR_node *new_identifier_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_identifier_expr_IR_node->instruction = PUSH;
 			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
 			new_identifier_expr_IR_node->p_code_operand.identifier = dst->name;
 			return new_identifier_expr_IR_node;
 			break;
+		
+		/*case OPERATOR: ;
+			printf("in operator case.\n");
+			struct IR_node *new_operator_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			new_operator_IR_node->instruction = PUSH; 
+			new_operator_IR_node->operand_type = CONSTANT;
+			new_operator_IR_node->p_code_operand.constant = dst->value;
+			new_operator_IR_node->next->instruction = PUSH;
+			new_operator_IR_node->next->operand_type = IDENTIFIERS;
+			new_operator_IR_node->next->p_code_operand.identifier = dst->name;
+			
+			if(strcmp(dst->operator_name,"EQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = EQUALS;
+			} else if(strcmp(dst->operator_name,"INEQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = NOTEQUAL;
+			} else if(strcmp(dst->operator_name,"GREATER") == 0){
+				new_operator_IR_node->next->next->instruction = GREATHER_THAN;
+			} else if(strcmp(dst->operator_name,"LESS") == 0){
+				new_operator_IR_node->next->next->instruction = LESS_THAN;
+			} else if(strcmp(dst->operator_name,"GREATEREQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = GREATER_EQUAL;
+			} else if(strcmp(dst->operator_name,"LESSEQUAL") == 0){
+				new_operator_IR_node->next->next->instruction = LESS_EQUALS;
+			} 
+			
+			return new_operator_IR_node;
+			break;
+			*/
 			
 		//TODOs
 		//case EXPRESSION_FUNCTIONCALL:
 		
 		case FUNCTION_HEADER: // should never happens
+			printf("in function header case.\n");
 			break;
 		
 		default:
+			printf("in default case.\n");
+			printf("type of dst node is %d", dst->type);
 			break;	
 	
 			

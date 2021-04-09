@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 //DST
-enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, FUNCTION_CALL, FUNCTION_RET, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, IF_CONDITION, IF_CONDITION_MULTIPLE, IF_CONDITION_MULTIPLE_NOT, ELSE_STATEMENT, EXPRESSION, EXPRESSION_NUMBER, EXPRESSION_IDENTIFIER, EXPRESSION_FUNCTIONCALL, EXPRESSION_PARANTHESIS};
+enum node_type {PROGRAM, FUNCTION_HEADER, FUNCTION, FUNCTION_CALL, FUNCTION_RET, VARIABLE_DECLARATION, VARIABLE_ASSIGNMENT, IF_STATEMENT, IF_CONDITION, IF_CONDITION_MULTIPLE, IF_CONDITION_MULTIPLE_NOT, ELSE_STATEMENT, EXPRESSION, EXPRESSION_NUMBER, EXPRESSION_IDENTIFIER, EXPRESSION_FUNCTIONCALL, EXPRESSION_PARANTHESIS, OPERATOR};
 
 struct dst_node
 {
@@ -38,7 +38,7 @@ struct symbol_node *symtable;
 //------------------------------------------------------------------------------
 
 //P_code generarion 
-enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF, AND, OR, NOT, EQUALS, NOTEQUAL, LESS_EQUAL, GREATER_EQUAL, LESSTHAN, GREATHER, CALL, RET};
+enum p_code_inst {PUSH, POP, ADD, SUB, MUL, DIV, NOP, JMP, BRCT, BRCF, AND, OR, NOT, EQUALS, NOTEQUALS, LESS_EQUAL, GREATER_EQUAL, LESS_THAN, GREATER_THAN, CALL, RET};
 enum p_code_operand_type {REGISTER, CONSTANT, IDENTIFIERS};
 enum p_code_register {PC, SP, BP};
 
@@ -80,6 +80,7 @@ struct dst_node* new_dstnode_functionret(char *n, int val);
 struct dst_node* new_dstnode_if_condition(char *n, char *operator ,int val);
 struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char *operator, struct dst_node* second);
 struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, char *operator);
+struct dst_node* new_dstnode_operator(char *n, char *operator, int val);
 int check_semantics(struct dst_node *dst);
 void print_dst(struct dst_node *dst);
 struct IR_node *generate_IR(struct dst_node *dst);
