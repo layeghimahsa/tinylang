@@ -43,7 +43,9 @@ int main(int argc, char *argv[]){
 	
 	struct IR_node *IR = NULL;
 	IR = generate_IR(dst);
-	//print_IR(IR);
+	printf("------------------------------------------------\n");
+	printf("\nNow it comes to print IR generator\n");
+	print_IR(IR);
 	
 	//print_symboltable(symtable);
 }

@@ -3620,10 +3620,29 @@ char *gen_label()
 void print_IR(struct IR_node *IR){
 	
 	
-	struct IR_node *current = IR;
+	struct IR_node *current;
+	current = IR;
 	
-	while(current->next != NULL){
-		if(current->label != NULL)
+	while(current != NULL){
+	
+		if(current->label != NULL){
+			printf(" %s\t", current->label);
+		}
+		
+		printf(" %s\t", getInstructionName(current->instruction));
+		
+		
+		if(current->operand_type == IDENTIFIERS){
+			printf(" %s\n", current->p_code_operand.identifier);
+		} else if(current->operand_type == CONSTANT){
+			printf(" %d\n", current->p_code_operand.constant);
+		} else if(current->operand_type == REGISTER){
+			printf(" %s\n", getRegisterName(current->p_code_operand.p_register));
+		} else {
+			printf("\n");
+		}
+		
+		/*if(current->label != NULL)
 			printf("%s\t", current->label);
 
 		if( (current->instruction == ADD) || (current->instruction == SUB) || (current->instruction == MUL) || (current->instruction == DIV) || (current->instruction == NOP))
@@ -3640,7 +3659,7 @@ void print_IR(struct IR_node *IR){
 			} else if(current->operand_type == REGISTER){
 				printf("%s\n", getRegisterName(current->p_code_operand.p_register));
 			}
-		}
+		}*/
 		
 		current = current->next;
 	}
@@ -3651,16 +3670,28 @@ const char* getInstructionName(enum p_code_inst inst)
 {
    switch (inst) 
    {
-      case PUSH: return "PUSH";
-      case POP: return "POP";
-      case ADD: return "ADD";
-      case SUB: return "SUB";
-      case MUL: return "MUL";
-      case DIV: return "DIV";
-      case NOP: return "NOP";
-      case JMP: return "JMP";
-      case BRCT: return "BRCT";
-      case BRCF: return "BRCF";
+      case 0: return "PUSH"; break;
+      case 1: return "POP"; break;
+      case 2: return "ADD"; break;
+      case 3: return "SUB"; break;
+      case 4: return "MUL"; break;
+      case 5: return "DIV"; break;
+      case 6: return "NOP"; break;
+      case 7: return "JMP"; break;
+      case 8: return "BRCT"; break;
+      case 9: return "BRCF"; break;
+      case 10: return "AND"; break;
+      case 11: return "OR"; break;
+      case 12: return "NOT"; break;
+      case 13: return "EQUALS"; break;
+      case 14: return "NOTEQUALS"; break;
+      case 15: return "LESS_EQUAL"; break;
+      case 16: return "GREATER_EQUAL"; break;
+      case 17: return "LESS_THAN"; break;
+      case 18: return "GREATER_THAN"; break;
+      case 19: return "CALL"; break;
+      case 20: return "RET"; break;
+      default: break;
 
    }
 }
