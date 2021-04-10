@@ -554,9 +554,9 @@ static const yytype_uint8 yyrline[] =
 {
        0,    67,    67,    74,    75,    77,    83,   102,   103,   104,
      108,   117,   130,   139,   140,   141,   142,   143,   144,   145,
-     146,   149,   160,   176,   177,   178,   179,   181,   182,   183,
-     184,   185,   186,   189,   201,   202,   203,   204,   205,   206,
-     209,   210,   213,   220,   221,   222,   225,   226,   227
+     146,   149,   160,   174,   175,   176,   177,   179,   180,   181,
+     182,   183,   184,   187,   199,   200,   201,   202,   203,   204,
+     207,   208,   211,   218,   219,   220,   223,   224,   225
 };
 #endif
 
@@ -1579,7 +1579,7 @@ yyreduce:
 	node->type = IF_STATEMENT;
 	node->down = (yyvsp[-4].dst_ptr);
 	(node->down)->side = (yyvsp[-1].dst_ptr);
-	node->side = NULL;
+	((node->down)->side)->down = NULL;
 	(yyval.dst_ptr) = node;
 
 }
@@ -1594,78 +1594,76 @@ yyreduce:
 	node->value = 0;
 	node->type = IF_STATEMENT;
 	node->down = (yyvsp[-5].dst_ptr);
-	printf("\n if statement down is %s\n", node->down->name);
-	node->side = (yyvsp[0].dst_ptr);
 	(node->down)->side = (yyvsp[-2].dst_ptr);
-	//((node->down)->side)->down =$8;
+	((node->down)->side)->down =(yyvsp[0].dst_ptr);
 	(yyval.dst_ptr) = node;
 
 }
-#line 1605 "parser.tab.c"
+#line 1603 "parser.tab.c"
     break;
 
   case 23:
-#line 176 "parser.y"
+#line 174 "parser.y"
                             {(yyval.dst_ptr)->down = new_dstnode_if_condition(current_identifier, if_operator, current_value);}
-#line 1611 "parser.tab.c"
+#line 1609 "parser.tab.c"
     break;
 
   case 24:
-#line 177 "parser.y"
+#line 175 "parser.y"
                                                                     { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
-#line 1617 "parser.tab.c"
+#line 1615 "parser.tab.c"
     break;
 
   case 25:
-#line 178 "parser.y"
+#line 176 "parser.y"
                                                                    { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
-#line 1623 "parser.tab.c"
+#line 1621 "parser.tab.c"
     break;
 
   case 26:
-#line 179 "parser.y"
+#line 177 "parser.y"
                                             { (yyval.dst_ptr) = new_dstnode_if_condition_multiple_not((yyvsp[-1].dst_ptr), (yyvsp[-3].identifier_name));}
-#line 1629 "parser.tab.c"
+#line 1627 "parser.tab.c"
     break;
 
   case 27:
-#line 181 "parser.y"
+#line 179 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value = (yyvsp[0].value);}
-#line 1635 "parser.tab.c"
+#line 1633 "parser.tab.c"
     break;
 
   case 28:
-#line 182 "parser.y"
+#line 180 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
-#line 1641 "parser.tab.c"
+#line 1639 "parser.tab.c"
     break;
 
   case 29:
-#line 183 "parser.y"
+#line 181 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
-#line 1647 "parser.tab.c"
+#line 1645 "parser.tab.c"
     break;
 
   case 30:
-#line 184 "parser.y"
+#line 182 "parser.y"
                                    {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value));  current_identifier=(yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
-#line 1653 "parser.tab.c"
+#line 1651 "parser.tab.c"
     break;
 
   case 31:
-#line 185 "parser.y"
+#line 183 "parser.y"
                                            {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
-#line 1659 "parser.tab.c"
+#line 1657 "parser.tab.c"
     break;
 
   case 32:
-#line 186 "parser.y"
+#line 184 "parser.y"
                                         {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value = (yyvsp[0].value);}
-#line 1665 "parser.tab.c"
+#line 1663 "parser.tab.c"
     break;
 
   case 33:
-#line 190 "parser.y"
+#line 188 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "else";
@@ -1675,106 +1673,106 @@ yyreduce:
 	node->side = NULL;
 	(yyval.dst_ptr) = node;
 }
-#line 1679 "parser.tab.c"
+#line 1677 "parser.tab.c"
     break;
 
   case 34:
-#line 201 "parser.y"
+#line 199 "parser.y"
                                 {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VD] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1685 "parser.tab.c"
+#line 1683 "parser.tab.c"
     break;
 
   case 35:
-#line 202 "parser.y"
+#line 200 "parser.y"
                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VA] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1691 "parser.tab.c"
+#line 1689 "parser.tab.c"
     break;
 
   case 36:
-#line 203 "parser.y"
+#line 201 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [IF] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1697 "parser.tab.c"
+#line 1695 "parser.tab.c"
     break;
 
   case 37:
-#line 204 "parser.y"
+#line 202 "parser.y"
                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [EL] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1703 "parser.tab.c"
+#line 1701 "parser.tab.c"
     break;
 
   case 38:
-#line 205 "parser.y"
+#line 203 "parser.y"
                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [FU] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1709 "parser.tab.c"
+#line 1707 "parser.tab.c"
     break;
 
   case 39:
-#line 206 "parser.y"
+#line 204 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [RE] name: %s\n",(yyval.dst_ptr)->name);}
-#line 1715 "parser.tab.c"
+#line 1713 "parser.tab.c"
     break;
 
   case 40:
-#line 209 "parser.y"
+#line 207 "parser.y"
                                          { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
-#line 1721 "parser.tab.c"
+#line 1719 "parser.tab.c"
     break;
 
   case 41:
-#line 210 "parser.y"
+#line 208 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
-#line 1727 "parser.tab.c"
+#line 1725 "parser.tab.c"
     break;
 
   case 42:
-#line 213 "parser.y"
+#line 211 "parser.y"
                                               {
 			printf("\ndetecting function call\n");
 			(yyval.dst_ptr) = new_dstnode_functioncall((yyvsp[-4].identifier_name), number_of_args);
 			number_of_args = 1; 
 			counter = 0;
 		}
-#line 1738 "parser.tab.c"
+#line 1736 "parser.tab.c"
     break;
 
   case 43:
-#line 220 "parser.y"
+#line 218 "parser.y"
                                 { number_of_args = number_of_args + counter;}
-#line 1744 "parser.tab.c"
+#line 1742 "parser.tab.c"
     break;
 
   case 44:
-#line 221 "parser.y"
+#line 219 "parser.y"
                       { counter = 1; }
-#line 1750 "parser.tab.c"
+#line 1748 "parser.tab.c"
     break;
 
   case 45:
-#line 222 "parser.y"
+#line 220 "parser.y"
                {number_of_args = 0;}
-#line 1756 "parser.tab.c"
+#line 1754 "parser.tab.c"
     break;
 
   case 46:
-#line 225 "parser.y"
+#line 223 "parser.y"
                                        { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); }
-#line 1762 "parser.tab.c"
+#line 1760 "parser.tab.c"
     break;
 
   case 47:
-#line 226 "parser.y"
+#line 224 "parser.y"
                               { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1768 "parser.tab.c"
+#line 1766 "parser.tab.c"
     break;
 
   case 48:
-#line 227 "parser.y"
+#line 225 "parser.y"
                              { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1774 "parser.tab.c"
+#line 1772 "parser.tab.c"
     break;
 
 
-#line 1778 "parser.tab.c"
+#line 1776 "parser.tab.c"
 
       default: break;
     }
@@ -2006,7 +2004,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 230 "parser.y"
+#line 228 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -2193,22 +2191,6 @@ struct dst_node* new_dstnode_if_condition_multiple_not(struct dst_node* first, c
 	node->type = IF_CONDITION_MULTIPLE_NOT;
 	node->operator_name = (char *) malloc(strlen(operator)+1);
 	strcpy(node->operator_name,operator);
-	return node;
-
-}
-
-
-struct dst_node* new_dstnode_operator(char *n, char *operator, int val)
-{
-	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->type = OPERATOR;
-	node->name = (char *) malloc(strlen(n)+1);
-	strcpy(node->name,n);
-	node->operator_name = (char *) malloc(strlen(operator)+1);
-	strcpy(node->operator_name,operator);
-	node->value = val;
-	node->down = NULL;
-	node->side = NULL;
 	return node;
 
 }
@@ -3155,10 +3137,7 @@ char* getType(int i){
 		break;
 	case 16: 
 		name = "EXPRESSION_PARANTHESIS";
-		break;	
-	case 17: 
-		name = "OPERATOR";
-		break;				
+		break;					
 	default: 
 		break;	
 		
@@ -3353,7 +3332,13 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_IF_body->instruction = NOP;
 			last_node_IF_body->operand_type = REGISTER;
 			last_node_IF_body->p_code_operand.p_register = PC;
-			last_node_IF_body->next = generate_IR(dst->side); //p-code for else
+			if(((dst->down)->side)->down != NULL){
+				last_node_IF_body->next = generate_IR(((dst->down)->side)->down); //p-code for else
+				last_node_IF_body->next->next = generate_IR(dst->side);
+			}else{
+				last_node_IF_body->next = generate_IR(dst->side);
+			}
+
 			return new_IF_condition_IR_node;
 			break;
 		
@@ -3388,10 +3373,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		
 		case IF_CONDITION_MULTIPLE: ;
 			printf("in if condition multiple case.\n");
-			printf("0.type of dst node is %s\n", getType(dst->type));
-			printf("1.type of dst node is %s - %s\n", getType(dst->down->type), dst->down->name);
 			struct IR_node *new_IF_condition_multiple_first_IR_node = generate_IR(dst->down); //p-code for first if condition result
-			printf("2. type of dst node is %s", getType(dst->side->type));
 			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
 			while(last_node_fisrt_if_cond->next != NULL)
 				last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
@@ -3445,32 +3427,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			return new_IF_condition_multiple_not_IR_node;
 			break;	
 		
-		/*case OPERATOR:
-			printf("in operator case.\n");
-			struct IR_node *new_operator_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
-			new_operator_IR_node->instruction = PUSH;
-			new_operator_IR_node->operand_type = CONSTANT;
-			new_operator_IR_node->p_code_operand.constant = dst->value;
-			new_operator_IR_node->next->instruction = PUSH;
-			new_operator_IR_node->next->operand_type = IDENTIFIERS;
-			new_operator_IR_node->next->p_code_operand.identifier = dst->name;
-			
-			if(strcmp(dst->operator_name,"EQUAL") == 0){
-				new_operator_IR_node->next->next->instruction = EQUALS;
-			} else if(strcmp(dst->operator_name,"INEQUAL") == 0){
-				new_operator_IR_node->next->next->instruction = NOTEQUALS;
-			} else if(strcmp(dst->operator_name,"GREATER") == 0){
-				new_operator_IR_node->next->next->instruction = GREATER_THAN;
-			} else if(strcmp(dst->operator_name,"LESS") == 0){
-				new_operator_IR_node->next->next->instruction = LESS_THAN;
-			} else if(strcmp(dst->operator_name,"GREATEREQUAL") == 0){
-				new_operator_IR_node->next->next->instruction = GREATER_EQUAL;
-			} else if(strcmp(dst->operator_name,"LESSEQUAL") == 0){
-				new_operator_IR_node->next->next->instruction = LESS_EQUAL;
-			} 
-			
-			return new_operator_IR_node;
-			break;*/
 			
 		case ELSE_STATEMENT: ;
 			printf("in else statement case.\n");
@@ -3620,7 +3576,15 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			*/
 			
 		//TODOs
-		//case EXPRESSION_FUNCTIONCALL:
+		case EXPRESSION_FUNCTIONCALL:
+			printf("in expression function call case.\n");
+			struct IR_node *new_expr_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_expr_func_call_IR_node->instruction = CALL;
+			new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_expr_func_call_IR_node->p_code_operand.identifier = dst->name;
+			new_expr_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
+			//new_func_call_IR_node->next = generate_IR(dst->side);
+			return new_expr_func_call_IR_node;
 		
 		case FUNCTION_HEADER: // should never happens
 			printf("in function header case.\n");
@@ -3628,7 +3592,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		
 		default:
 			printf("in default case.\n");
-			printf("type of dst node is %d", dst->type);
+			printf("type of dst node is %d\n", dst->type);
 			break;	
 	
 			
