@@ -1,5 +1,6 @@
 func foo(arg x, arg y)
 (
+	int m;
 	return (x + y);
 )
 
@@ -9,15 +10,18 @@ func main(void)
 	int x;
 	int y;
 	int z;
-	x = 0;
-	y = 1 * 5;
+	x = 5;
+	y = 1;
 
-	if(!(x == 0))
+	if((x == 0) && (y==1))
 	(
 		int z;
-		int y;
 		z = foo(x,y);
+	)
+	else(
+		m = 3;
 	)
 	
 	return 0;
+
 )

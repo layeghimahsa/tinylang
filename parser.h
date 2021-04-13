@@ -52,7 +52,7 @@ struct IR_node{
 	union
 	{
 	   char *identifier;
-	   int constant;
+	   int constant; //or identifier offset, or jump destination address
 	   enum p_code_register p_register;
 	} p_code_operand;
 	
