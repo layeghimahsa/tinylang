@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "parser.tab.h"
 #include "parser.h"
+#include "interpreter.h"
 
 
 void interpret(struct IR_node *IR)
@@ -8,6 +9,7 @@ void interpret(struct IR_node *IR)
 	//resolve label addresses in IR
 	struct IR_node *IR_label_ptr = IR;
 	int addr = 0;
+	int nargs;
 	while(IR_label_ptr != NULL )
 	{
 		IR_label_ptr->address = addr;
@@ -33,14 +35,14 @@ void interpret(struct IR_node *IR)
 	while(pc != 1)
 	{
 		//read instruction from IR
-		instruction = get_instruction(IR,pc); //to be done!
+		instruction = get_instruction(IR,pc);
 		//update environment
 		switch(instruction->instruction)
 		{
 			case PUSH:
 				switch(instruction->operand_type)
 				{
-					case REGISTER:
+					case REGISTER: ;
 						int to_push;
 						if(instruction->p_code_operand.p_register == SP)
 							to_push = sp;
@@ -58,7 +60,7 @@ void interpret(struct IR_node *IR)
 						sp++;
 						pc++;
 						break;
-					case IDENTIFIERS:
+					case IDENTIFIERS: ;
 						int identifier_offset;
 						identifier_offset = get_offset(instruction->p_code_operand.identifier);
 						stack[sp+1] = stack[bp+identifier_offset];
@@ -72,7 +74,7 @@ void interpret(struct IR_node *IR)
 			case POP:
 				switch(instruction->operand_type)
 				{
-					case REGISTER:
+					case REGISTER: ;
 						int to_pop;
 						if(instruction->p_code_operand.p_register == SP)
 							to_pop = sp;
@@ -85,7 +87,7 @@ void interpret(struct IR_node *IR)
 						pc++;
 						break;
 						
-					case IDENTIFIERS:
+					case IDENTIFIERS: ;
 						int identifier_offset;
 						identifier_offset = get_offset(instruction->p_code_operand.identifier);
 						stack[bp+identifier_offset] = stack[sp];
@@ -164,31 +166,31 @@ void interpret(struct IR_node *IR)
 				pc++;
 				break;
 			case JMP:
-				pc = instruction->p_code_operand->constant;
+				pc = instruction->p_code_operand.constant;
 				break;
 			case BRCT:
 				if(stack[sp])
-					pc = instruction->p_code_operand->constant;
+					pc = instruction->p_code_operand.constant;
 				else
 					pc++;
 				sp--;
 				break;
 			case BRCF:
 				if(!stack[sp])
-					pc = instruction->p_code_operand->constant;
+					pc = instruction->p_code_operand.constant;
 				else
 					pc++;
 				sp--;
 				break;
 			case CALL:
 				sp = sp+2;
-				int nargs = instruction->address;
+				nargs = instruction->args;
 				stack[sp - nargs] = pc+1;
 				stack[sp - nargs - 1] = bp;
 				bp = sp - nargs;
 				break;
-			case RET:  
-				int nargs = instruction->p_code_operand.constant;
+			case RET:  ;
+				nargs = instruction->p_code_operand.constant;
 				sp = sp - nargs - 2;
 				bp  = stack[sp]; //retreiving previous bp
 				pc = stack[sp+1]; //retreiving return address
@@ -196,6 +198,14 @@ void interpret(struct IR_node *IR)
 				break;
 		}
 		//(optional): print environment
+		printf("PC = %d, BP = %d, SP = %d\n",pc,bp,sp);
+		printf("instruction = %s\n",to_string(instruction));
+		int begin = sp;
+		while(begin >= bp)
+		{
+			printf("\t%d\n",stack[begin]);
+			begin--;
+		}
 	}
 	
 }
@@ -215,19 +225,22 @@ void resolve_label(char *l, int addr, struct IR_node *IR)
 	}
 }
 
-struct IR_node * get_instruction(struct IR_node *IR , p_code_register pc){
+struct IR_node * get_instruction(struct IR_node *IR , int pc){
 
-	struct IR_node * next_IR = (struct IR_node *) malloc(sizeof(struct IR_node));
+	while(IR->address != pc){
+		IR = IR->next;
+	}
 	
-	if((IR->instruction != JMP) && (IR->instruction != BRCT) && (IR->instruction != BRCF) && (IR->instruction != CALL) ){
+	return IR;
+	/*if((IR->instruction != JMP) && (IR->instruction != BRCT) && (IR->instruction != BRCF) && (IR->instruction != CALL) ){
 		next_IR = IR->next;
 		return next_IR;
-	}
+	}*/
 	
 }
 
 int get_offset(char *n){
-	int offset = 1;
+	int offset = 0;
 	offset += name_exists(node, n);
 	return offset;
 	
@@ -278,6 +291,40 @@ void add_to_name_node(struct name_node **node, char *n, int index){
 	return; 
 
 
+}
+
+char * to_string (struct IR_node *instruction){
+	
+	char *str;
+	
+	if(instruction->label != NULL){
+		strcat(str, instruction->label);
+		strcat(str, "  ");
+	}
+		
+	char * inst = getInstructionName(instruction->instruction);
+	
+	if(inst == PUSH || inst == POP  || inst == JMP || inst == BRCT || inst == BRCF || inst == CALL || inst == RET ){
+		strcat(str, inst);
+		strcat(str, "  ");
+		
+		if(instruction->operand_type == IDENTIFIERS){
+			strcat(str, instruction->p_code_operand.identifier);
+		} else if(instruction->operand_type == CONSTANT){
+			char *strint;
+			itoa(instruction->p_code_operand.constant,strint,10);
+			strcat(str, strint);
+		} else if(instruction->operand_type == REGISTER){
+			strcat(str, getRegisterName(instruction->p_code_operand.p_register));
+		} else {
+			strcat(str, "  ");
+		}
+	}else{
+		strcat(str, inst);
+		strcat(str, "  ");
+	}
+				
+	return str;
 }
 
 

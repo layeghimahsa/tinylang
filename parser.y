@@ -1497,6 +1497,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_func_call->instruction = CALL;
 			last_node_func_call->operand_type = IDENTIFIERS;
 			last_node_func_call->p_code_operand.identifier = dst->name;
+			last_node_func_call->args = dst->value; 
 			return new_func_call_IR_node;
 			
 			break;
@@ -1750,6 +1751,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_expr_func_call->instruction = CALL;
 			last_node_expr_func_call->operand_type = IDENTIFIERS;
 			last_node_expr_func_call->p_code_operand.identifier = dst->name;
+			last_node_expr_func_call->args = dst->value;
 			return new_expr_func_call_IR_node;
 		
 		case PARAMS:

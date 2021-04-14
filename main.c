@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "parser.tab.h"
 #include "parser.h"
+#include "interpreter.h"
 
 extern FILE *yyin;
 extern struct dst_node *dst;
@@ -47,5 +48,6 @@ int main(int argc, char *argv[]){
 	printf("\nNow it comes to print IR generator\n");
 	print_IR(IR);
 	
-	//print_symboltable(symtable);
+	//interpret(IR);
+	
 }

@@ -46,6 +46,7 @@ struct IR_node{
 	
 	char *label;
 	int address;
+	int args; //number of function arguments
 	enum p_code_inst instruction;
 	enum p_code_operand_type operand_type;
 	

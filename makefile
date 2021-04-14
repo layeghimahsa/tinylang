@@ -1,14 +1,12 @@
-CC=gcc
 
-
-parser.tab.c: parser.y
+parser.tab.c parser.tab.h: parser.y
 	bison -d parser.y
 
-lex.yy.c: scanner.l
+lex.yy.c: scanner.l parser.tab.h
 	flex scanner.l
 
-main: parser.tab.c lex.yy.c 
-	$(CC) -o main parser.tab.c lex.yy.c  
+main: main.c parser.tab.c lex.yy.c interpreter.c
+	gcc main.c lex.yy.c parser.tab.c interpreter.c -o a.exe
 
 
 
