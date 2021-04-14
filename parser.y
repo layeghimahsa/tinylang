@@ -57,6 +57,10 @@
 %token <identifier_name> PLUS MINUS MULTIPLICATION DIVISION
 %left PLUS MINUS
 %left MULTIPLICATION DIVISION
+%nonassoc IFX
+%nonassoc ELSE
+
+
 
 
 %start program
@@ -128,7 +132,7 @@ variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 	//add_to_symtable(symtable, $1, $3);
 	 	
 } |  IDENTIFIER ASSIGNMENT expr  //this is for function call exception
-{ 
+{
 	current_identifier = $1;
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
@@ -146,7 +150,7 @@ expr: NUMBER  {$$ = new_dstnode_expr_number($1); } //$$->name = current_identifi
     | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); }; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
 
-if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
+if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR %prec IFX
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "if";
@@ -171,6 +175,8 @@ if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR
 
 };
 
+
+
 if_conditions: if_condition {$$->down = new_dstnode_if_condition(current_identifier, if_operator, current_value);}
 	     | LPAR if_conditions RPAR ANDS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
 	     | LPAR if_conditions RPAR ORS LPAR if_conditions RPAR { $$ = new_dstnode_if_condition_multiple($2, $4, $6);}
@@ -190,9 +196,18 @@ else_statement: ELSE LPAR statement_list RPAR
 	node->name = "else";
 	node->value = 0;
 	node->type = ELSE_STATEMENT;
-	node->down = $3; //I was wondering why here it is ok that else does not have a statement_list. For if statement that is not true.
+	node->down = $3;
 	node->side = NULL;
 	$$ = node;
+} | ELSE LPAR RPAR {
+	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
+	node->name = "else";
+	node->value = 0;
+	node->type = ELSE_STATEMENT;
+	node->down = NULL;
+	node->side = NULL;
+	$$ = node;
+
 };
 	    
 
@@ -902,11 +917,13 @@ int check_semantics(struct dst_node *dst){
 				
 				if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
 					char * variable_name = if_statement_ptr->name;
-					char * scope = func_ptr->down->name; //it should changeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee. maybe there are so many if else
+					char * scope = func_ptr->down->name; 
+					char * scope_2 = func_ptr->name; //variable decleration in function 
 					
 					bool result = is_variable_exists(symtable, variable_name, scope);
+					bool result_2 = is_variable_exists(symtable, variable_name, scope_2);
 					
-					if(result == false){
+					if(result == false && result_2 == false){
 						error += 1;
 						printf("- Variable %s is not declared before!\n", variable_name);
 					} 
@@ -947,10 +964,12 @@ int check_semantics(struct dst_node *dst){
 					if(if_statement_ptr->side->type == VARIABLE_ASSIGNMENT){
 						char * variable_name = if_statement_ptr->side->name;
 						char * scope = func_ptr->down->name;
+						char * scope_2 = func_ptr->name; //variable decleration in function 
 						
 						bool result = is_variable_exists(symtable, variable_name, scope);
+						bool result_2 = is_variable_exists(symtable, variable_name, scope_2);
 						
-						if(result == false){
+						if(result == false && result_2 == false){
 							error += 1;
 							printf("- Variable %s is not declared before!\n", variable_name);
 						}
@@ -1047,11 +1066,13 @@ int check_semantics(struct dst_node *dst){
 					
 					if(if_statement_ptr->type == VARIABLE_ASSIGNMENT){
 						char * variable_name = if_statement_ptr->name;
-						char * scope = statement_ptr->side->name; //it should changeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee. maybe there are so many if else
-						
+						char * scope = statement_ptr->side->name;
+						char * scope_2 = func_ptr->name; //variable decleration in function 
+					
 						bool result = is_variable_exists(symtable, variable_name, scope);
+						bool result_2 = is_variable_exists(symtable, variable_name, scope_2);
 						
-						if(result == false){
+						if(result == false && result_2 == false){
 							error += 1;
 							printf("- Variable %s is not declared before!\n", variable_name);
 						} 
@@ -1092,10 +1113,12 @@ int check_semantics(struct dst_node *dst){
 						if(if_statement_ptr->side->type == VARIABLE_ASSIGNMENT){
 							char * variable_name = if_statement_ptr->side->name;
 							char * scope = statement_ptr->side->name;
+							char * scope_2 = func_ptr->name; //variable decleration in function 
 							
 							bool result = is_variable_exists(symtable, variable_name, scope);
+							bool result_2 = is_variable_exists(symtable, variable_name, scope_2);
 							
-							if(result == false){
+							if(result == false && result_2 == false){
 								error += 1;
 								printf("- Variable %s is not declared before!\n", variable_name);
 							}
@@ -1238,19 +1261,22 @@ void print_dst(struct dst_node *dst){
 					
 					if( else_ptr != NULL){
 						
-						else_ptr = else_ptr->down;
-						printf("\n->\n");
-						printf("\t\t-------------------------else-------------------------\n\n");
-						printf("\t\tname: %s", else_ptr->name);
-						printf(", type: %s", getType(else_ptr->type));
-						printf(", value or arg: %d", else_ptr->value);
-						while(else_ptr->side != NULL){
+						if(else_ptr->down != NULL){
+							else_ptr = else_ptr->down;
 							printf("\n->\n");
-							printf("\t\tname: %s", else_ptr->side->name);
-							printf(", type: %s", getType(else_ptr->side->type));
-							printf(", value or arg: %d", else_ptr->side->value);
-							else_ptr = else_ptr->side;
-						} 
+							printf("\t\t-------------------------else-------------------------\n\n");
+							printf("\t\tname: %s", else_ptr->name);
+							printf(", type: %s", getType(else_ptr->type));
+							printf(", value or arg: %d", else_ptr->value);
+							while(else_ptr->side != NULL){
+								printf("\n->\n");
+								printf("\t\tname: %s", else_ptr->side->name);
+								printf(", type: %s", getType(else_ptr->side->type));
+								printf(", value or arg: %d", else_ptr->side->value);
+								else_ptr = else_ptr->side;
+							} 
+						
+						}
 					}
 					
 				}
@@ -1525,13 +1551,16 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_IF_body = last_node_IF->next;
 			while(last_node_IF_body->next != NULL)
 				last_node_IF_body = last_node_IF_body->next;
-			//last_node_IF_body->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			//last_node_IF_body = last_node_IF_body->next;
 
 			if(((dst->down)->side)->down != NULL){
-				last_node_IF_body->next = generate_IR(((dst->down)->side)->down); //p-code for else
-				last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
-				last_node_IF_body->next->next = generate_IR(dst->side);
+				if((((dst->down)->side)->down)->down != NULL){
+					last_node_IF_body->next = generate_IR(((dst->down)->side)->down); //p-code for else
+					last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
+					last_node_IF_body->next->next = generate_IR(dst->side);
+				}else{
+					last_node_IF_body->next = generate_IR(dst->side);
+					last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
+				}
 			}else{
 				last_node_IF_body->next = generate_IR(dst->side);
 				last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes

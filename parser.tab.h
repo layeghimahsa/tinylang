@@ -77,7 +77,8 @@ extern int yydebug;
     PLUS = 283,
     MINUS = 284,
     MULTIPLICATION = 285,
-    DIVISION = 286
+    DIVISION = 286,
+    IFX = 287
   };
 #endif
 
@@ -91,7 +92,7 @@ union YYSTYPE
 	int value; 
 	struct dst_node *dst_ptr;
 
-#line 95 "parser.tab.h"
+#line 96 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
