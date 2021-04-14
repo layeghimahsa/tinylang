@@ -22,6 +22,7 @@
 %type <dst_ptr> function_list
 %type <dst_ptr> function_header
 %type <dst_ptr> function
+%type <dst_ptr> params
 %type <dst_ptr> if_statement
 %type <dst_ptr> if_condition
 %type <dst_ptr> if_conditions
@@ -147,7 +148,7 @@ expr: NUMBER  {$$ = new_dstnode_expr_number($1); } //$$->name = current_identifi
     | expr MULTIPLICATION expr {$$ = new_dstnode_expr($1, $2, $3); }
     | expr DIVISION expr {$$ = new_dstnode_expr($1, $2, $3); }
     | LPAR expr RPAR  {$$ = new_dstnode_expr_paranthesis($2); }
-    | function_call {$$ = new_dstnode_expr_functioncall($1->name, $1->value); }; //the value should be changed to function return value!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    | function_call {$$ = $1; $$->type = EXPRESSION_FUNCTIONCALL; };//new_dstnode_expr_functioncall($1->name, $1->value); }; 
     
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR %prec IFX
@@ -226,16 +227,17 @@ statement_list: statement statement_list { $1->side = $2; $$ = $1; }
 function_call: IDENTIFIER LPAR params RPAR SC {
 			printf("\ndetecting function call\n");
 			$$ = new_dstnode_functioncall($1, number_of_args);
+			$$->down = $3;
 			number_of_args = 1; 
 			counter = 0;
 		};
 
-params: IDENTIFIER COMMA params { number_of_args = number_of_args + counter;}
-	| IDENTIFIER  { counter = 1; } 
+params: IDENTIFIER COMMA params { $$ = (struct dst_node *) malloc(sizeof(struct dst_node)); $$->name = $1; $$->type = PARAMS; $$->side = $3; number_of_args = number_of_args + counter;}
+	| IDENTIFIER  { $$ = (struct dst_node *) malloc(sizeof(struct dst_node)); $$->name = $1; $$->type = PARAMS; counter = 1; } 
 	| VOID {number_of_args = 0;}        
 	;  
 	
-function_ret: RETURN LPAR expr RPAR SC { $$ = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); } //I set func_ret value to function number of args not return value; used for IR later
+function_ret: RETURN LPAR expr RPAR SC { $$ = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); } 
 	     | RETURN expr SC { $$ = new_dstnode_functionret(mother_function, arg_temp);}
 	     | RETURN NUMBER { $$ = new_dstnode_functionret(mother_function, arg_temp);};
 
@@ -1367,7 +1369,10 @@ char* getType(int i){
 		break;
 	case 16: 
 		name = "EXPRESSION_PARANTHESIS";
-		break;					
+		break;	
+	case 17: 
+		name = "PARAMS";
+		break;				
 	default: 
 		break;	
 		
@@ -1480,13 +1485,58 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	
 		case FUNCTION_CALL: ;//this should be changed to function call later
 			printf("in function call case.\n");
-			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			
+			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_call_IR_node->instruction = CALL;
 			new_func_call_IR_node->operand_type = IDENTIFIERS;
 			new_func_call_IR_node->p_code_operand.identifier = dst->name;
 			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
 			new_func_call_IR_node->next = generate_IR(dst->side);
+			return new_func_call_IR_node;*/
+
+			struct IR_node *new_func_call_IR_node = generate_IR(dst->down); //first arg
+			
+			struct IR_node *last_node_func_call = new_func_call_IR_node;
+			while(last_node_func_call->next != NULL)
+				last_node_func_call = last_node_func_call->next;
+			
+	
+			
+			last_node_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			last_node_func_call = last_node_func_call->next;
+			last_node_func_call->instruction = CALL;
+			last_node_func_call->operand_type = IDENTIFIERS;
+			last_node_func_call->p_code_operand.identifier = dst->name;
 			return new_func_call_IR_node;
+			
+			
+			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			int args_ = dst->value; 
+			new_func_call_IR_node->instruction = PUSH;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->down->name;
+			args_--;
+			struct dst_node *side_ptr = dst->down->side;
+			while(args_ != 0){
+				new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+				new_func_call_IR_node = new_func_call_IR_node->next;
+				new_func_call_IR_node->instruction = PUSH;
+				new_func_call_IR_node->operand_type = IDENTIFIERS;
+				new_func_call_IR_node->p_code_operand.identifier = side_ptr->name;
+				args_--;
+				side_ptr = side_ptr->side;
+			}
+			
+			new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_call_IR_node = new_func_call_IR_node->next;
+			new_func_call_IR_node->instruction = CALL;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->name;
+			
+			new_func_call_IR_node->next = generate_IR(dst->side);
+
+			return new_func_call_IR_node;*/
+			
 			break;
 		
 		case FUNCTION_RET: ;//this should be added and definitely be changed.
@@ -1727,13 +1777,47 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 		case EXPRESSION_FUNCTIONCALL: ;
 			printf("in expression function call case.\n");
-			struct IR_node *new_expr_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-			new_expr_func_call_IR_node->instruction = CALL;
+			struct IR_node *new_expr_func_call_IR_node = generate_IR(dst->down); //first arg
+			
+			struct IR_node *last_node_expr_func_call = new_expr_func_call_IR_node;
+			while(last_node_expr_func_call->next != NULL)
+				last_node_expr_func_call = last_node_expr_func_call->next;
+			
+			/*int args_ = dst->value; 
+			new_expr_func_call_IR_node->instruction = PUSH;
 			new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_expr_func_call_IR_node->p_code_operand.identifier = dst->name;
-			new_expr_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
-			//new_func_call_IR_node->next = generate_IR(dst->side);
+			new_expr_func_call_IR_node->p_code_operand.identifier = dst->down->name;
+			printf("1111 name %s \n", dst->down->name);
+			args_--;
+			struct dst_node *side_ptr_2 = dst->down->side;
+			while(args_ != 0 && (side_ptr_2 != NULL)){
+				new_expr_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+				new_expr_func_call_IR_node = new_expr_func_call_IR_node->next;
+				new_expr_func_call_IR_node->instruction = PUSH;
+				new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
+				new_expr_func_call_IR_node->p_code_operand.identifier = side_ptr_2->name;
+				printf("2222 name %s \n", side_ptr_2->name);
+				args_--;
+				side_ptr_2 = side_ptr_2->side;
+			}*/
+			
+			last_node_expr_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			last_node_expr_func_call = last_node_expr_func_call->next;
+			last_node_expr_func_call->instruction = CALL;
+			last_node_expr_func_call->operand_type = IDENTIFIERS;
+			last_node_expr_func_call->p_code_operand.identifier = dst->name;
 			return new_expr_func_call_IR_node;
+		
+		case PARAMS:
+			printf("in param case.\n");
+			struct IR_node *new_param_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			int args = dst->value;
+			new_param_IR_node->instruction = PUSH;
+			new_param_IR_node->operand_type = IDENTIFIERS;
+			new_param_IR_node->p_code_operand.identifier = dst->name;
+			new_param_IR_node->next = generate_IR(dst->side);
+			return new_param_IR_node;
+			break;
 		
 		default:
 			printf("in default case.\n");

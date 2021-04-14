@@ -169,7 +169,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 37 "parser.y"
+#line 38 "parser.y"
 
 	char *identifier_name;
 	int value; 
@@ -553,11 +553,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    71,    71,    78,    79,    81,    87,   106,   107,   108,
-     112,   121,   134,   143,   144,   145,   146,   147,   148,   149,
-     150,   153,   164,   180,   181,   182,   183,   185,   186,   187,
-     188,   189,   190,   193,   202,   214,   215,   216,   217,   218,
-     219,   222,   223,   226,   233,   234,   235,   238,   239,   240
+       0,    72,    72,    79,    80,    82,    88,   107,   108,   109,
+     113,   122,   135,   144,   145,   146,   147,   148,   149,   150,
+     151,   154,   165,   181,   182,   183,   184,   186,   187,   188,
+     189,   190,   191,   194,   203,   215,   216,   217,   218,   219,
+     220,   223,   224,   227,   235,   236,   237,   240,   241,   242
 };
 #endif
 
@@ -1414,7 +1414,7 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 72 "parser.y"
+#line 73 "parser.y"
         {
 		dst = new_program_dstnode();
 		dst->down = (yyvsp[0].dst_ptr);
@@ -1423,19 +1423,19 @@ yyreduce:
     break;
 
   case 3:
-#line 78 "parser.y"
+#line 79 "parser.y"
                                        {(yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
 #line 1429 "parser.tab.c"
     break;
 
   case 4:
-#line 79 "parser.y"
+#line 80 "parser.y"
                            {(yyval.dst_ptr) = (yyvsp[0].dst_ptr);}
 #line 1435 "parser.tab.c"
     break;
 
   case 5:
-#line 82 "parser.y"
+#line 83 "parser.y"
 {
 	(yyval.dst_ptr) = new_dstnode_functiondeclaration((yyvsp[-3].dst_ptr));
 	(yyval.dst_ptr)->down = (yyvsp[-1].dst_ptr); 
@@ -1444,7 +1444,7 @@ yyreduce:
     break;
 
   case 6:
-#line 88 "parser.y"
+#line 89 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = (yyvsp[-3].identifier_name);
@@ -1466,25 +1466,25 @@ yyreduce:
     break;
 
   case 7:
-#line 106 "parser.y"
+#line 107 "parser.y"
                                                   { number_of_args = number_of_args + counter;}
 #line 1472 "parser.tab.c"
     break;
 
   case 8:
-#line 107 "parser.y"
+#line 108 "parser.y"
                                { counter = 1; }
 #line 1478 "parser.tab.c"
     break;
 
   case 9:
-#line 108 "parser.y"
+#line 109 "parser.y"
                     {number_of_args = 0;}
 #line 1484 "parser.tab.c"
     break;
 
   case 10:
-#line 113 "parser.y"
+#line 114 "parser.y"
 {
 	printf("\nvariable declaration detected\n");
 	(yyval.dst_ptr) = new_dstnode_variabledeclaration((yyvsp[-1].identifier_name));
@@ -1495,7 +1495,7 @@ yyreduce:
     break;
 
   case 11:
-#line 122 "parser.y"
+#line 123 "parser.y"
 {
 	printf("\nvariable assignment detected\n");
 	current_identifier = (yyvsp[-3].identifier_name);
@@ -1513,7 +1513,7 @@ yyreduce:
     break;
 
   case 12:
-#line 135 "parser.y"
+#line 136 "parser.y"
 {
 	current_identifier = (yyvsp[-2].identifier_name);
 	(yyval.dst_ptr) = new_dstnode_variableassignment((yyvsp[-2].identifier_name));
@@ -1524,55 +1524,55 @@ yyreduce:
     break;
 
   case 13:
-#line 143 "parser.y"
+#line 144 "parser.y"
               {(yyval.dst_ptr) = new_dstnode_expr_number((yyvsp[0].value)); }
 #line 1530 "parser.tab.c"
     break;
 
   case 14:
-#line 144 "parser.y"
+#line 145 "parser.y"
                  {(yyval.dst_ptr) = new_dstnode_expr_identifier((yyvsp[0].identifier_name));}
 #line 1536 "parser.tab.c"
     break;
 
   case 15:
-#line 145 "parser.y"
+#line 146 "parser.y"
                      {(yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr));}
 #line 1542 "parser.tab.c"
     break;
 
   case 16:
-#line 146 "parser.y"
+#line 147 "parser.y"
                       {(yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr));}
 #line 1548 "parser.tab.c"
     break;
 
   case 17:
-#line 147 "parser.y"
+#line 148 "parser.y"
                                {(yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
 #line 1554 "parser.tab.c"
     break;
 
   case 18:
-#line 148 "parser.y"
+#line 149 "parser.y"
                          {(yyval.dst_ptr) = new_dstnode_expr((yyvsp[-2].dst_ptr), (yyvsp[-1].identifier_name), (yyvsp[0].dst_ptr)); }
 #line 1560 "parser.tab.c"
     break;
 
   case 19:
-#line 149 "parser.y"
+#line 150 "parser.y"
                       {(yyval.dst_ptr) = new_dstnode_expr_paranthesis((yyvsp[-1].dst_ptr)); }
 #line 1566 "parser.tab.c"
     break;
 
   case 20:
-#line 150 "parser.y"
-                    {(yyval.dst_ptr) = new_dstnode_expr_functioncall((yyvsp[0].dst_ptr)->name, (yyvsp[0].dst_ptr)->value); }
+#line 151 "parser.y"
+                    {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); (yyval.dst_ptr)->type = EXPRESSION_FUNCTIONCALL; }
 #line 1572 "parser.tab.c"
     break;
 
   case 21:
-#line 154 "parser.y"
+#line 155 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "if";
@@ -1588,7 +1588,7 @@ yyreduce:
     break;
 
   case 22:
-#line 166 "parser.y"
+#line 167 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "if_else";
@@ -1604,67 +1604,67 @@ yyreduce:
     break;
 
   case 23:
-#line 180 "parser.y"
+#line 181 "parser.y"
                             {(yyval.dst_ptr)->down = new_dstnode_if_condition(current_identifier, if_operator, current_value);}
 #line 1610 "parser.tab.c"
     break;
 
   case 24:
-#line 181 "parser.y"
+#line 182 "parser.y"
                                                                     { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
 #line 1616 "parser.tab.c"
     break;
 
   case 25:
-#line 182 "parser.y"
+#line 183 "parser.y"
                                                                    { (yyval.dst_ptr) = new_dstnode_if_condition_multiple((yyvsp[-5].dst_ptr), (yyvsp[-3].identifier_name), (yyvsp[-1].dst_ptr));}
 #line 1622 "parser.tab.c"
     break;
 
   case 26:
-#line 183 "parser.y"
+#line 184 "parser.y"
                                             { (yyval.dst_ptr) = new_dstnode_if_condition_multiple_not((yyvsp[-1].dst_ptr), (yyvsp[-3].identifier_name));}
 #line 1628 "parser.tab.c"
     break;
 
   case 27:
-#line 185 "parser.y"
+#line 186 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value = (yyvsp[0].value);}
 #line 1634 "parser.tab.c"
     break;
 
   case 28:
-#line 186 "parser.y"
+#line 187 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
 #line 1640 "parser.tab.c"
     break;
 
   case 29:
-#line 187 "parser.y"
+#line 188 "parser.y"
                                       {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
 #line 1646 "parser.tab.c"
     break;
 
   case 30:
-#line 188 "parser.y"
+#line 189 "parser.y"
                                    {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value));  current_identifier=(yyvsp[-2].identifier_name); if_operator = (yyvsp[-1].identifier_name); current_value = (yyvsp[0].value); }
 #line 1652 "parser.tab.c"
     break;
 
   case 31:
-#line 189 "parser.y"
+#line 190 "parser.y"
                                            {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value =(yyvsp[0].value);}
 #line 1658 "parser.tab.c"
     break;
 
   case 32:
-#line 190 "parser.y"
+#line 191 "parser.y"
                                         {(yyval.dst_ptr) = new_dstnode_if_condition((yyvsp[-2].identifier_name), (yyvsp[-1].identifier_name), (yyvsp[0].value)); current_identifier=(yyvsp[-2].identifier_name); if_operator=(yyvsp[-1].identifier_name); current_value = (yyvsp[0].value);}
 #line 1664 "parser.tab.c"
     break;
 
   case 33:
-#line 194 "parser.y"
+#line 195 "parser.y"
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "else";
@@ -1678,7 +1678,7 @@ yyreduce:
     break;
 
   case 34:
-#line 202 "parser.y"
+#line 203 "parser.y"
                    {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
 	node->name = "else";
@@ -1693,102 +1693,103 @@ yyreduce:
     break;
 
   case 35:
-#line 214 "parser.y"
+#line 215 "parser.y"
                                 {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VD] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1699 "parser.tab.c"
     break;
 
   case 36:
-#line 215 "parser.y"
+#line 216 "parser.y"
                                {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [VA] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1705 "parser.tab.c"
     break;
 
   case 37:
-#line 216 "parser.y"
+#line 217 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [IF] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1711 "parser.tab.c"
     break;
 
   case 38:
-#line 217 "parser.y"
+#line 218 "parser.y"
                           {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [EL] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1717 "parser.tab.c"
     break;
 
   case 39:
-#line 218 "parser.y"
+#line 219 "parser.y"
                          {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [FU] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1723 "parser.tab.c"
     break;
 
   case 40:
-#line 219 "parser.y"
+#line 220 "parser.y"
                         {(yyval.dst_ptr) = (yyvsp[0].dst_ptr); printf("\n [RE] name: %s\n",(yyval.dst_ptr)->name);}
 #line 1729 "parser.tab.c"
     break;
 
   case 41:
-#line 222 "parser.y"
+#line 223 "parser.y"
                                          { (yyvsp[-1].dst_ptr)->side = (yyvsp[0].dst_ptr); (yyval.dst_ptr) = (yyvsp[-1].dst_ptr); }
 #line 1735 "parser.tab.c"
     break;
 
   case 42:
-#line 223 "parser.y"
+#line 224 "parser.y"
                   { (yyval.dst_ptr) = NULL;}
 #line 1741 "parser.tab.c"
     break;
 
   case 43:
-#line 226 "parser.y"
+#line 227 "parser.y"
                                               {
 			printf("\ndetecting function call\n");
 			(yyval.dst_ptr) = new_dstnode_functioncall((yyvsp[-4].identifier_name), number_of_args);
+			(yyval.dst_ptr)->down = (yyvsp[-2].dst_ptr);
 			number_of_args = 1; 
 			counter = 0;
 		}
-#line 1752 "parser.tab.c"
+#line 1753 "parser.tab.c"
     break;
 
   case 44:
-#line 233 "parser.y"
-                                { number_of_args = number_of_args + counter;}
-#line 1758 "parser.tab.c"
+#line 235 "parser.y"
+                                { (yyval.dst_ptr) = (struct dst_node *) malloc(sizeof(struct dst_node)); (yyval.dst_ptr)->name = (yyvsp[-2].identifier_name); (yyval.dst_ptr)->type = PARAMS; (yyval.dst_ptr)->side = (yyvsp[0].dst_ptr); number_of_args = number_of_args + counter;}
+#line 1759 "parser.tab.c"
     break;
 
   case 45:
-#line 234 "parser.y"
-                      { counter = 1; }
-#line 1764 "parser.tab.c"
+#line 236 "parser.y"
+                      { (yyval.dst_ptr) = (struct dst_node *) malloc(sizeof(struct dst_node)); (yyval.dst_ptr)->name = (yyvsp[0].identifier_name); (yyval.dst_ptr)->type = PARAMS; counter = 1; }
+#line 1765 "parser.tab.c"
     break;
 
   case 46:
-#line 235 "parser.y"
+#line 237 "parser.y"
                {number_of_args = 0;}
-#line 1770 "parser.tab.c"
+#line 1771 "parser.tab.c"
     break;
 
   case 47:
-#line 238 "parser.y"
+#line 240 "parser.y"
                                        { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); }
-#line 1776 "parser.tab.c"
+#line 1777 "parser.tab.c"
     break;
 
   case 48:
-#line 239 "parser.y"
+#line 241 "parser.y"
                               { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1782 "parser.tab.c"
+#line 1783 "parser.tab.c"
     break;
 
   case 49:
-#line 240 "parser.y"
+#line 242 "parser.y"
                              { (yyval.dst_ptr) = new_dstnode_functionret(mother_function, arg_temp);}
-#line 1788 "parser.tab.c"
+#line 1789 "parser.tab.c"
     break;
 
 
-#line 1792 "parser.tab.c"
+#line 1793 "parser.tab.c"
 
       default: break;
     }
@@ -2020,7 +2021,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 243 "parser.y"
+#line 245 "parser.y"
 
 
 struct dst_node* new_dstnode_variabledeclaration(char *n)
@@ -3148,7 +3149,10 @@ char* getType(int i){
 		break;
 	case 16: 
 		name = "EXPRESSION_PARANTHESIS";
-		break;					
+		break;	
+	case 17: 
+		name = "PARAMS";
+		break;				
 	default: 
 		break;	
 		
@@ -3261,13 +3265,58 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	
 		case FUNCTION_CALL: ;//this should be changed to function call later
 			printf("in function call case.\n");
-			struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			
+			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_call_IR_node->instruction = CALL;
 			new_func_call_IR_node->operand_type = IDENTIFIERS;
 			new_func_call_IR_node->p_code_operand.identifier = dst->name;
 			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
 			new_func_call_IR_node->next = generate_IR(dst->side);
+			return new_func_call_IR_node;*/
+
+			struct IR_node *new_func_call_IR_node = generate_IR(dst->down); //first arg
+			
+			struct IR_node *last_node_func_call = new_func_call_IR_node;
+			while(last_node_func_call->next != NULL)
+				last_node_func_call = last_node_func_call->next;
+			
+	
+			
+			last_node_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			last_node_func_call = last_node_func_call->next;
+			last_node_func_call->instruction = CALL;
+			last_node_func_call->operand_type = IDENTIFIERS;
+			last_node_func_call->p_code_operand.identifier = dst->name;
 			return new_func_call_IR_node;
+			
+			
+			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			int args_ = dst->value; 
+			new_func_call_IR_node->instruction = PUSH;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->down->name;
+			args_--;
+			struct dst_node *side_ptr = dst->down->side;
+			while(args_ != 0){
+				new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+				new_func_call_IR_node = new_func_call_IR_node->next;
+				new_func_call_IR_node->instruction = PUSH;
+				new_func_call_IR_node->operand_type = IDENTIFIERS;
+				new_func_call_IR_node->p_code_operand.identifier = side_ptr->name;
+				args_--;
+				side_ptr = side_ptr->side;
+			}
+			
+			new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			new_func_call_IR_node = new_func_call_IR_node->next;
+			new_func_call_IR_node->instruction = CALL;
+			new_func_call_IR_node->operand_type = IDENTIFIERS;
+			new_func_call_IR_node->p_code_operand.identifier = dst->name;
+			
+			new_func_call_IR_node->next = generate_IR(dst->side);
+
+			return new_func_call_IR_node;*/
+			
 			break;
 		
 		case FUNCTION_RET: ;//this should be added and definitely be changed.
@@ -3508,13 +3557,47 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 		case EXPRESSION_FUNCTIONCALL: ;
 			printf("in expression function call case.\n");
-			struct IR_node *new_expr_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-			new_expr_func_call_IR_node->instruction = CALL;
+			struct IR_node *new_expr_func_call_IR_node = generate_IR(dst->down); //first arg
+			
+			struct IR_node *last_node_expr_func_call = new_expr_func_call_IR_node;
+			while(last_node_expr_func_call->next != NULL)
+				last_node_expr_func_call = last_node_expr_func_call->next;
+			
+			/*int args_ = dst->value; 
+			new_expr_func_call_IR_node->instruction = PUSH;
 			new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_expr_func_call_IR_node->p_code_operand.identifier = dst->name;
-			new_expr_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
-			//new_func_call_IR_node->next = generate_IR(dst->side);
+			new_expr_func_call_IR_node->p_code_operand.identifier = dst->down->name;
+			printf("1111 name %s \n", dst->down->name);
+			args_--;
+			struct dst_node *side_ptr_2 = dst->down->side;
+			while(args_ != 0 && (side_ptr_2 != NULL)){
+				new_expr_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+				new_expr_func_call_IR_node = new_expr_func_call_IR_node->next;
+				new_expr_func_call_IR_node->instruction = PUSH;
+				new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
+				new_expr_func_call_IR_node->p_code_operand.identifier = side_ptr_2->name;
+				printf("2222 name %s \n", side_ptr_2->name);
+				args_--;
+				side_ptr_2 = side_ptr_2->side;
+			}*/
+			
+			last_node_expr_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
+			last_node_expr_func_call = last_node_expr_func_call->next;
+			last_node_expr_func_call->instruction = CALL;
+			last_node_expr_func_call->operand_type = IDENTIFIERS;
+			last_node_expr_func_call->p_code_operand.identifier = dst->name;
 			return new_expr_func_call_IR_node;
+		
+		case PARAMS:
+			printf("in param case.\n");
+			struct IR_node *new_param_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			int args = dst->value;
+			new_param_IR_node->instruction = PUSH;
+			new_param_IR_node->operand_type = IDENTIFIERS;
+			new_param_IR_node->p_code_operand.identifier = dst->name;
+			new_param_IR_node->next = generate_IR(dst->side);
+			return new_param_IR_node;
+			break;
 		
 		default:
 			printf("in default case.\n");
