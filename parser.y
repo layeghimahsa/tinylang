@@ -1486,21 +1486,11 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		case FUNCTION_CALL: ;//this should be changed to function call later
 			printf("in function call case.\n");
 			
-			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-			new_func_call_IR_node->instruction = CALL;
-			new_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_func_call_IR_node->p_code_operand.identifier = dst->name;
-			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
-			new_func_call_IR_node->next = generate_IR(dst->side);
-			return new_func_call_IR_node;*/
-
 			struct IR_node *new_func_call_IR_node = generate_IR(dst->down); //first arg
 			
 			struct IR_node *last_node_func_call = new_func_call_IR_node;
 			while(last_node_func_call->next != NULL)
 				last_node_func_call = last_node_func_call->next;
-			
-	
 			
 			last_node_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			last_node_func_call = last_node_func_call->next;
@@ -1508,34 +1498,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_func_call->operand_type = IDENTIFIERS;
 			last_node_func_call->p_code_operand.identifier = dst->name;
 			return new_func_call_IR_node;
-			
-			
-			/*struct IR_node *new_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-			int args_ = dst->value; 
-			new_func_call_IR_node->instruction = PUSH;
-			new_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_func_call_IR_node->p_code_operand.identifier = dst->down->name;
-			args_--;
-			struct dst_node *side_ptr = dst->down->side;
-			while(args_ != 0){
-				new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-				new_func_call_IR_node = new_func_call_IR_node->next;
-				new_func_call_IR_node->instruction = PUSH;
-				new_func_call_IR_node->operand_type = IDENTIFIERS;
-				new_func_call_IR_node->p_code_operand.identifier = side_ptr->name;
-				args_--;
-				side_ptr = side_ptr->side;
-			}
-			
-			new_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-			new_func_call_IR_node = new_func_call_IR_node->next;
-			new_func_call_IR_node->instruction = CALL;
-			new_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_func_call_IR_node->p_code_operand.identifier = dst->name;
-			
-			new_func_call_IR_node->next = generate_IR(dst->side);
-
-			return new_func_call_IR_node;*/
 			
 			break;
 		
@@ -1782,24 +1744,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_expr_func_call = new_expr_func_call_IR_node;
 			while(last_node_expr_func_call->next != NULL)
 				last_node_expr_func_call = last_node_expr_func_call->next;
-			
-			/*int args_ = dst->value; 
-			new_expr_func_call_IR_node->instruction = PUSH;
-			new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
-			new_expr_func_call_IR_node->p_code_operand.identifier = dst->down->name;
-			printf("1111 name %s \n", dst->down->name);
-			args_--;
-			struct dst_node *side_ptr_2 = dst->down->side;
-			while(args_ != 0 && (side_ptr_2 != NULL)){
-				new_expr_func_call_IR_node->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
-				new_expr_func_call_IR_node = new_expr_func_call_IR_node->next;
-				new_expr_func_call_IR_node->instruction = PUSH;
-				new_expr_func_call_IR_node->operand_type = IDENTIFIERS;
-				new_expr_func_call_IR_node->p_code_operand.identifier = side_ptr_2->name;
-				printf("2222 name %s \n", side_ptr_2->name);
-				args_--;
-				side_ptr_2 = side_ptr_2->side;
-			}*/
 			
 			last_node_expr_func_call->next = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			last_node_expr_func_call = last_node_expr_func_call->next;
