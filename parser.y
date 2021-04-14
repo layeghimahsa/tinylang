@@ -1481,14 +1481,14 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_func = new_func_IR_node;
 			while(last_node_func->next != NULL)
 				last_node_func = last_node_func->next;
-			last_node_func->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			//last_node_func->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_func->next = generate_IR(dst->side);
 			return new_func_IR_node;
 			break;
 					
 		case VARIABLE_ASSIGNMENT: ;
 			printf("in variable assignment case.\n");
-			struct IR_node *new_IR_node = generate_IR(dst->down);
+			struct IR_node *new_IR_node = generate_IR(dst->down); //p-code for expr
 			struct IR_node *last_node = new_IR_node;
 			while(last_node->next != NULL)
 				last_node = last_node->next;
@@ -1525,18 +1525,18 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_IF_body = last_node_IF->next;
 			while(last_node_IF_body->next != NULL)
 				last_node_IF_body = last_node_IF_body->next;
-			last_node_IF_body->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			last_node_IF_body = last_node_IF_body->next;
+			//last_node_IF_body->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			//last_node_IF_body = last_node_IF_body->next;
 
 			if(((dst->down)->side)->down != NULL){
-				last_node_IF_body = generate_IR(((dst->down)->side)->down); //p-code for else
-				last_node_IF_body->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
-				last_node_IF_body->next = generate_IR(dst->side);
+				last_node_IF_body->next = generate_IR(((dst->down)->side)->down); //p-code for else
+				last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
+				last_node_IF_body->next->next = generate_IR(dst->side);
 			}else{
-				last_node_IF_body = generate_IR(dst->side);
-				last_node_IF_body->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
+				last_node_IF_body->next = generate_IR(dst->side);
+				last_node_IF_body->next->label = label_if_end; //if_end_label should be assigned to either begining of the else statement or anything after if body finishes
 			}
-
+			
 			return new_IF_condition_IR_node;
 			break;
 		
@@ -1576,30 +1576,18 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
 			while(last_node_fisrt_if_cond->next != NULL)
 				last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
-			/*last_node_fisrt_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
-			last_node_fisrt_if_cond->instruction = PUSH; 
-			last_node_fisrt_if_cond->operand_type = CONSTANT;
-			last_node_fisrt_if_cond->p_code_operand.constant = dst->side->value;*/
 			
 			
 			struct IR_node *new_IF_condition_multiple_second_IR_node = generate_IR(dst->down->side); //p-code for second if condition result
 			struct IR_node *last_node_second_if_cond = new_IF_condition_multiple_second_IR_node;
 			while(last_node_second_if_cond->next != NULL)
 				last_node_second_if_cond = last_node_second_if_cond->next;
-			/*last_node_second_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			last_node_second_if_cond = last_node_second_if_cond->next;
-			last_node_second_if_cond->instruction = PUSH; 
-			last_node_second_if_cond->operand_type = CONSTANT;
-			last_node_second_if_cond->p_code_operand.constant = dst->side->side->value;*/
-			
-			//last_node_fisrt_if_cond->next = last_node_second_if_cond;
 			
 			
 			struct IR_node *new_operation_cond_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_fisrt_if_cond->next = new_IF_condition_multiple_second_IR_node;
 			last_node_second_if_cond->next = new_operation_cond_IR_node;
-			//last_node_second_if_cond->next = new_operation_cond_IR_node;
+
 			
 			if(strcmp(dst->operator_name,"&&") == 0){
 				new_operation_cond_IR_node->instruction = AND;
@@ -1617,11 +1605,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_not_if_cond = new_IF_condition_multiple_not_IR_node;
 			while(last_node_not_if_cond->next != NULL)
 				last_node_not_if_cond = last_node_not_if_cond->next;
-			last_node_not_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
-			last_node_not_if_cond = last_node_not_if_cond->next;
-			last_node_not_if_cond->instruction = PUSH; 
-			last_node_not_if_cond->operand_type = CONSTANT;
-			last_node_not_if_cond->p_code_operand.constant = dst->side->value;
 			
 			struct IR_node *new_operation_not_cond_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_not_if_cond->next = new_operation_not_cond_IR_node;
@@ -1642,10 +1625,12 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		case EXPRESSION: ;
 			printf("in expression case.\n");
 			
+			//printf("\n\n dst side : %d \n\n",dst->side->value);
 			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side); //p-code for first expression result
-		
-			struct IR_node *new_second_expr_IR_node = generate_IR(dst->side->side); //p-code for second expression result
 			
+			//printf("\n\n dst side : %d\n\n",dst->side->side->value);
+			struct IR_node *new_second_expr_IR_node = generate_IR(dst->side->side); //p-code for second expression result
+
 
 			struct IR_node *new_operation_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));			
 			new_first_expr_IR_node->next = new_second_expr_IR_node;
@@ -1670,9 +1655,13 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			printf("in expression paranthesis case.\n");
 			
 			struct IR_node *new_first_expr_par_IR_node = generate_IR(dst->side); //p-code for first expression result
+			struct IR_node *last_node_fisrt_expr_par = new_first_expr_par_IR_node;
+			while(last_node_fisrt_expr_par->next != NULL)
+				last_node_fisrt_expr_par = last_node_fisrt_expr_par->next;
+			
 		
 			struct IR_node *new_operation_par_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
-			new_first_expr_par_IR_node->next = new_operation_par_IR_node;
+			last_node_fisrt_expr_par->next = new_operation_par_IR_node;
 			
 			
 			if(strcmp(dst->operator_name,"+") == 0){
@@ -1707,7 +1696,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			return new_identifier_expr_IR_node;
 			break;
 			
-		case EXPRESSION_FUNCTIONCALL:
+		case EXPRESSION_FUNCTIONCALL: ;
 			printf("in expression function call case.\n");
 			struct IR_node *new_expr_func_call_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_expr_func_call_IR_node->instruction = CALL;
@@ -1716,10 +1705,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			new_expr_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
 			//new_func_call_IR_node->next = generate_IR(dst->side);
 			return new_expr_func_call_IR_node;
-		
-		case FUNCTION_HEADER: // should never happens
-			printf("in function header case.\n");
-			break;
 		
 		default:
 			printf("in default case.\n");
