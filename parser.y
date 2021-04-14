@@ -1459,7 +1459,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			new_func_call_IR_node->operand_type = IDENTIFIERS;
 			new_func_call_IR_node->p_code_operand.identifier = dst->name;
 			new_func_call_IR_node->address = dst->value; //my design decison is to put number of function arguments in IR address
-			//new_func_call_IR_node->next = generate_IR(dst->side);
+			new_func_call_IR_node->next = generate_IR(dst->side);
 			return new_func_call_IR_node;
 			break;
 		
@@ -1475,8 +1475,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		case FUNCTION: ;
 			printf("in function case.");
 			char *label_function_begin = gen_label();
-			char *label_function_end = gen_label();
-			printf("  function begin label : %s , function end label %s\n", label_function_begin, label_function_end);
+			printf("  function begin label : %s \n", label_function_begin);
 			struct IR_node *new_func_IR_node = generate_IR(dst->down); //p-code for the first statement in function body
 			new_func_IR_node->label = label_function_begin;
 			struct IR_node *last_node_func = new_func_IR_node;
@@ -1484,7 +1483,6 @@ struct IR_node *generate_IR(struct dst_node *dst){
 				last_node_func = last_node_func->next;
 			last_node_func->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_func->next = generate_IR(dst->side);
-			last_node_func->label = label_function_end;
 			return new_func_IR_node;
 			break;
 					
@@ -1568,6 +1566,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 				new_IF_condition_single_IR_node->next->next->instruction = LESS_EQUAL;
 			} 
 			
+			
 			return new_IF_condition_single_IR_node;
 			break;
 		
@@ -1577,26 +1576,30 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
 			while(last_node_fisrt_if_cond->next != NULL)
 				last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
-			last_node_fisrt_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			/*last_node_fisrt_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_fisrt_if_cond = last_node_fisrt_if_cond->next;
 			last_node_fisrt_if_cond->instruction = PUSH; 
 			last_node_fisrt_if_cond->operand_type = CONSTANT;
-			last_node_fisrt_if_cond->p_code_operand.constant = dst->side->value;
+			last_node_fisrt_if_cond->p_code_operand.constant = dst->side->value;*/
 			
 			
 			struct IR_node *new_IF_condition_multiple_second_IR_node = generate_IR(dst->down->side); //p-code for second if condition result
 			struct IR_node *last_node_second_if_cond = new_IF_condition_multiple_second_IR_node;
 			while(last_node_second_if_cond->next != NULL)
 				last_node_second_if_cond = last_node_second_if_cond->next;
-			last_node_second_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+			/*last_node_second_if_cond->next = (struct IR_node *) malloc(sizeof(struct IR_node));
 			last_node_second_if_cond = last_node_second_if_cond->next;
 			last_node_second_if_cond->instruction = PUSH; 
 			last_node_second_if_cond->operand_type = CONSTANT;
-			last_node_second_if_cond->p_code_operand.constant = dst->side->side->value;
+			last_node_second_if_cond->p_code_operand.constant = dst->side->side->value;*/
 			
-			last_node_fisrt_if_cond->next = last_node_second_if_cond;
+			//last_node_fisrt_if_cond->next = last_node_second_if_cond;
+			
+			
 			struct IR_node *new_operation_cond_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
+			last_node_fisrt_if_cond->next = new_IF_condition_multiple_second_IR_node;
 			last_node_second_if_cond->next = new_operation_cond_IR_node;
+			//last_node_second_if_cond->next = new_operation_cond_IR_node;
 			
 			if(strcmp(dst->operator_name,"&&") == 0){
 				new_operation_cond_IR_node->instruction = AND;
@@ -1757,17 +1760,21 @@ void print_IR(struct IR_node *IR){
 			printf(" %s\t", current->label);
 		}
 		
-		printf(" %s\t", getInstructionName(current->instruction));
+		enum p_code_inst inst = current->instruction;
 		
-		
-		if(current->operand_type == IDENTIFIERS){
-			printf(" %s\n", current->p_code_operand.identifier);
-		} else if(current->operand_type == CONSTANT){
-			printf(" %d\n", current->p_code_operand.constant);
-		} else if(current->operand_type == REGISTER){
-			printf(" %s\n", getRegisterName(current->p_code_operand.p_register));
-		} else {
-			printf("\n");
+		if(inst == PUSH || inst == POP  || inst == JMP || inst == BRCT || inst == BRCF || inst == CALL || inst == RET ){
+			printf(" %s\t", getInstructionName(current->instruction));
+			if(current->operand_type == IDENTIFIERS){
+				printf(" %s\n", current->p_code_operand.identifier);
+			} else if(current->operand_type == CONSTANT){
+				printf(" %d\n", current->p_code_operand.constant);
+			} else if(current->operand_type == REGISTER){
+				printf(" %s\n", getRegisterName(current->p_code_operand.p_register));
+			} else {
+				printf("\n");
+			}
+		}else{
+			printf(" %s\n", getInstructionName(current->instruction));
 		}
 				
 		current = current->next;

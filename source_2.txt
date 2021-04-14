@@ -1,6 +1,5 @@
 func foo(arg x, arg y)
 (
-	int m;
 	return (x + y);
 )
 
@@ -18,9 +17,7 @@ func main(void)
 		int z;
 		z = foo(x,y);
 	)
-	else(
-		m = 3;
-	)
+	
 	
 	return 0;
 
