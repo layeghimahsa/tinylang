@@ -9,7 +9,7 @@
 	extern int yylineno;
 	int number_of_args = 1;
 	int counter = 0;
-	char *mother_function;
+	char *parent_function;
 	char *current_identifier;
 	int current_value;
 	int arg_temp;
@@ -54,7 +54,6 @@
 %token IF ELSE
 %token MAIN VOID
 %token ARG
-%token COMMENT
 %token <identifier_name> PLUS MINUS MULTIPLICATION DIVISION
 %left PLUS MINUS
 %left MULTIPLICATION DIVISION
@@ -94,13 +93,11 @@ function_header: FUNC IDENTIFIER LPAR function_args RPAR
 	node->down = NULL;
 	node->side = NULL;
 	arg_temp = number_of_args;
-	number_of_args = 1; //make this 0 to see what will happen!!!!!!!!!!!!!!!!!!!!!!!!!! , (tested) result-> it seems it should be 1
+	number_of_args = 1; 
 	counter = 0;
 	$$ = node;
 	
-	mother_function = $2; // This is used for variable scope //this is also for return (updated!)
-	//printf("\nmother function is: %s\n", mother_function);
-	//add_to_symtable(&symtable, $2, number_of_args, 0, "null");
+	parent_function = $2; // This is used for variable scope //this is also for return (updated!)
 
 };
 
@@ -112,25 +109,17 @@ function_args: ARG IDENTIFIER COMMA function_args { number_of_args = number_of_a
 
 variable_declaration: INT IDENTIFIER SC
 {
-	printf("\nvariable declaration detected\n");
 	$$ = new_dstnode_variabledeclaration($2);
-	//printf("\n I want to see what is the name of identifier here %s\n", $$->name);
-	//add_to_symtable(&symtable, $2, 0, 1, mother_function);
 };
 
 
 variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 {
-	printf("\nvariable assignment detected\n");
 	current_identifier = $1;
 	$$ = new_dstnode_variableassignment($1);
 	$$->down = $3;
 	$$->value = $$->down->value;
-	print_expr_nested($3);
-	
-	//printf("\ncurrent identifier is: %s\n", current_identifier);
-	//printf("valueeee: %d\n",current_value);
-	//add_to_symtable(symtable, $1, $3);
+	//print_expr_nested($3);	
 	 	
 } |  IDENTIFIER ASSIGNMENT expr  //this is for function call exception
 {
@@ -141,14 +130,14 @@ variable_assignment: IDENTIFIER ASSIGNMENT expr SC
 };
 
 
-expr: NUMBER  {$$ = new_dstnode_expr_number($1); } //$$->name = current_identifier; current_value = $1;}//add_variable_value(&variablenode, $$->name, $1);}
+expr: NUMBER  {$$ = new_dstnode_expr_number($1); } 
     | IDENTIFIER {$$ = new_dstnode_expr_identifier($1);}
     | expr PLUS expr {$$ = new_dstnode_expr($1, $2, $3);} 
     | expr MINUS expr {$$ = new_dstnode_expr($1, $2, $3);}
     | expr MULTIPLICATION expr {$$ = new_dstnode_expr($1, $2, $3); }
     | expr DIVISION expr {$$ = new_dstnode_expr($1, $2, $3); }
     | LPAR expr RPAR  {$$ = new_dstnode_expr_paranthesis($2); }
-    | function_call {$$ = $1; $$->type = EXPRESSION_FUNCTIONCALL; };//new_dstnode_expr_functioncall($1->name, $1->value); }; 
+    | function_call {$$ = $1; $$->type = EXPRESSION_FUNCTIONCALL; };
     
 
 if_statement: IF LPAR if_conditions RPAR LPAR statement_list RPAR %prec IFX
@@ -212,12 +201,12 @@ else_statement: ELSE LPAR statement_list RPAR
 };
 	    
 
-statement: variable_declaration {$$ = $1; printf("\n [VD] name: %s\n",$$->name);}
-	 | variable_assignment {$$ = $1; printf("\n [VA] name: %s\n",$$->name);} 
-	 | if_statement {$$ = $1; printf("\n [IF] name: %s\n",$$->name);}
-	 | else_statement {$$ = $1; printf("\n [EL] name: %s\n",$$->name);}
-	 | function_call {$$ = $1; printf("\n [FU] name: %s\n",$$->name);}
-	 | function_ret {$$ = $1; printf("\n [RE] name: %s\n",$$->name);};
+statement: variable_declaration {$$ = $1;}
+	 | variable_assignment {$$ = $1;} 
+	 | if_statement {$$ = $1;}
+	 | else_statement {$$ = $1;}
+	 | function_call {$$ = $1;}
+	 | function_ret {$$ = $1;};
 	 
 
 statement_list: statement statement_list { $1->side = $2; $$ = $1; }
@@ -225,7 +214,6 @@ statement_list: statement statement_list { $1->side = $2; $$ = $1; }
 		
 		
 function_call: IDENTIFIER LPAR params RPAR SC {
-			printf("\ndetecting function call\n");
 			$$ = new_dstnode_functioncall($1, number_of_args);
 			$$->down = $3;
 			number_of_args = 1; 
@@ -237,9 +225,9 @@ params: IDENTIFIER COMMA params { $$ = (struct dst_node *) malloc(sizeof(struct 
 	| VOID {number_of_args = 0;}        
 	;  
 	
-function_ret: RETURN LPAR expr RPAR SC { $$ = new_dstnode_functionret(mother_function, arg_temp /*$3->value*/); } 
-	     | RETURN expr SC { $$ = new_dstnode_functionret(mother_function, arg_temp);}
-	     | RETURN NUMBER { $$ = new_dstnode_functionret(mother_function, arg_temp);};
+function_ret: RETURN LPAR expr RPAR SC { $$ = new_dstnode_functionret(parent_function, arg_temp); } 
+	     | RETURN expr SC { $$ = new_dstnode_functionret(parent_function, arg_temp);}
+	     | RETURN NUMBER { $$ = new_dstnode_functionret(parent_function, arg_temp);};
 
 
 %%
@@ -278,8 +266,6 @@ struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 	node->value = dst_ptr->value;
 	node->down = NULL;
 	node->side = NULL;
-	//printf("\n name: %s\n",node->name);
-	//printf("value: %d\n",node->value);
 	return node;
 
 }
@@ -287,7 +273,7 @@ struct dst_node* new_dstnode_functiondeclaration(struct dst_node *dst_ptr)
 struct dst_node* new_program_dstnode()
 {
 	struct dst_node *node = (struct dst_node *) malloc(sizeof(struct dst_node));
-	node->name = "main"; // I changed form "program" to "main" for IR generation purpose
+	node->name = "main"; 
 	node->value = 0;
 	node->type = PROGRAM;
 	node->down = NULL;
@@ -414,9 +400,7 @@ struct dst_node* new_dstnode_if_condition_multiple(struct dst_node* first, char 
 	node->operator_name = (char *) malloc(strlen(operator)+1);
 	strcpy(node->operator_name,operator);
 	node->down = first;
-	//printf("\n1. in dst: type of dst node is %s\n", getType(node->side->type));
 	(node->down)->side = second;
-	//printf("2. in dst: type of dst node is %s\n", getType(node->side->side->type));
 	return node;
 
 }
@@ -486,24 +470,20 @@ int get(struct symbol_node *head, char *n){
 
 
 
-int check_semantics(struct dst_node *dst){
+int check_semantics(struct dst_node *dst) {
 	
-	//error types -> 0 = duplicate function
 	int error = 0;
 	
 	//-----------------------------------------1.function declaration------------------------------------
 	struct dst_node *func_ptr;
 	func_ptr = dst->down;
 	while(func_ptr != NULL){
-		//printf("name: %s\n", func_ptr->name);
 		char * func_name = func_ptr->name;
-		//printf("name: vatiable %s\n", func_name);
 		bool result = is_function_exists(symtable, func_name);
-		//printf("bool: %d\n", result);
+
 		if(result == true){
 			error += 1; //duplicate function
 			printf("-A function is declered before!\n");
-			//return error;
 		}else{
 			add_to_symtable(&symtable, func_name, func_ptr->value, 0, "null");
 		}
@@ -546,7 +526,6 @@ int check_semantics(struct dst_node *dst){
 					if(result == true){
 						error += 1; //duplicate variable in matching scope
 						printf("- Variable %s is declered before!\n", variable_name);
-						//return error;
 					} else{
 						add_to_symtable(&symtable, variable_name, 0, 1, scope);
 					}
@@ -581,7 +560,6 @@ int check_semantics(struct dst_node *dst){
 						if(result == true){
 							error += 1; //duplicate variable in matching scope
 							printf("- Variable %s is declered before!\n", variable_name);
-							//return error;
 						} else{
 							add_to_symtable(&symtable, variable_name, 0, 1, scope);
 						}
@@ -598,7 +576,6 @@ int check_semantics(struct dst_node *dst){
 							if(result == true){
 								error += 1; //duplicate variable in matching scope
 								printf("- Variable %s is declered before!\n", variable_name);
-								//return error;
 							} else{
 								add_to_symtable(&symtable, variable_name, 0, 1, scope);
 							}
@@ -1463,7 +1440,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	}
 
 	if(dst->type == PROGRAM){
-		printf("in program case.\n");
+		//printf("in program case.\n");
 		struct IR_node *new_prog_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 		new_prog_IR_node->instruction = CALL;
 		new_prog_IR_node->operand_type = IDENTIFIERS;
@@ -1484,7 +1461,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 	{
 	
 		case FUNCTION_CALL: ;//this should be changed to function call later
-			printf("in function call case.\n");
+			//printf("in function call case.\n");
 			
 			struct IR_node *new_func_call_IR_node = generate_IR(dst->down); //first arg
 			
@@ -1503,7 +1480,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case FUNCTION_RET: ;//this should be added and definitely be changed.
-			printf("in function return case.\n");
+			//printf("in function return case.\n");
 			struct IR_node *new_func_ret_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			new_func_ret_IR_node->instruction = RET;
 			new_func_ret_IR_node->operand_type = CONSTANT;
@@ -1512,21 +1489,26 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case FUNCTION: ;
-			printf("in function case.");
+			//printf("in function case.");
+			struct IR_node *new_func_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node)); 
 			char *label_function_begin = gen_label();
-			printf("  function begin label : %s \n", label_function_begin);
-			struct IR_node *new_func_IR_node = generate_IR(dst->down); //p-code for the first statement in function body
 			new_func_IR_node->label = label_function_begin;
-			struct IR_node *last_node_func = new_func_IR_node;
+			new_func_IR_node->instruction = NOP;
+			new_func_IR_node->operand_type = REGISTER;
+			new_func_IR_node->p_code_operand.p_register = PC;
+			
+			new_func_IR_node->next = generate_IR(dst->down); //p-code for the first statement in function body
+
+			struct IR_node *last_node_func = new_func_IR_node->next;
 			while(last_node_func->next != NULL)
 				last_node_func = last_node_func->next;
-			//last_node_func->next = (struct IR_node *) malloc(sizeof(struct IR_node));
+
 			last_node_func->next = generate_IR(dst->side);
 			return new_func_IR_node;
 			break;
 					
 		case VARIABLE_ASSIGNMENT: ;
-			printf("in variable assignment case.\n");
+			//printf("in variable assignment case.\n");
 			struct IR_node *new_IR_node = generate_IR(dst->down); //p-code for expr
 			struct IR_node *last_node = new_IR_node;
 			while(last_node->next != NULL)
@@ -1541,13 +1523,13 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case VARIABLE_DECLARATION: ;
-			printf("in variable declaration case.\n");
+			//printf("in variable declaration case.\n");
 			
 			return generate_IR(dst->side);
 			break;
 			
 		case IF_STATEMENT: ;
-			printf("in if statement case.\n");
+			//printf("in if statement case.\n");
 			char *label_if_begin = gen_label();
 			char *label_if_end = gen_label();
 			struct IR_node *new_IF_condition_IR_node = generate_IR(dst->down); //p-code for if condition
@@ -1583,7 +1565,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case IF_CONDITION: ;
-			printf("in if condition case.\n");
+			//printf("in if condition case.\n");
 			struct IR_node *new_IF_condition_single_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_IF_condition_single_IR_node->instruction = PUSH; 
 			new_IF_condition_single_IR_node->operand_type = CONSTANT;
@@ -1613,7 +1595,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 		
 		case IF_CONDITION_MULTIPLE: ;
-			printf("in if condition multiple case.\n");
+			//printf("in if condition multiple case.\n");
 			struct IR_node *new_IF_condition_multiple_first_IR_node = generate_IR(dst->down); //p-code for first if condition result
 			struct IR_node *last_node_fisrt_if_cond = new_IF_condition_multiple_first_IR_node;
 			while(last_node_fisrt_if_cond->next != NULL)
@@ -1642,7 +1624,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			
 		case IF_CONDITION_MULTIPLE_NOT: ;
-			printf("in if condition not case.\n");
+			//printf("in if condition not case.\n");
 			struct IR_node *new_IF_condition_multiple_not_IR_node = generate_IR(dst->side); //p-code for (not) if condition result
 			struct IR_node *last_node_not_if_cond = new_IF_condition_multiple_not_IR_node;
 			while(last_node_not_if_cond->next != NULL)
@@ -1657,7 +1639,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 		
 			
 		case ELSE_STATEMENT: ;
-			printf("in else statement case.\n");
+			//printf("in else statement case.\n");
 			struct IR_node *new_else_IR_node = generate_IR(dst->down); //p-code for else body
 			new_else_IR_node->next = generate_IR(dst->side);
 			return new_else_IR_node;
@@ -1665,7 +1647,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			
 		case EXPRESSION: ;
-			printf("in expression case.\n");
+			//printf("in expression case.\n");
 			
 			//printf("\n\n dst side : %d \n\n",dst->side->value);
 			struct IR_node *new_first_expr_IR_node = generate_IR(dst->side); //p-code for first expression result
@@ -1694,7 +1676,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			
 			
 		case EXPRESSION_PARANTHESIS: ;
-			printf("in expression paranthesis case.\n");
+			//printf("in expression paranthesis case.\n");
 			
 			struct IR_node *new_first_expr_par_IR_node = generate_IR(dst->side); //p-code for first expression result
 			struct IR_node *last_node_fisrt_expr_par = new_first_expr_par_IR_node;
@@ -1721,7 +1703,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case EXPRESSION_NUMBER: ;
-			printf("in expression number case.\n");
+			//printf("in expression number case.\n");
 			struct IR_node *new_number_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_number_expr_IR_node->instruction = PUSH;
 			new_number_expr_IR_node->operand_type = CONSTANT;
@@ -1730,7 +1712,7 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case EXPRESSION_IDENTIFIER: ;
-			printf("in expression identifier case.\n");
+			//printf("in expression identifier case.\n");
 			struct IR_node *new_identifier_expr_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			new_identifier_expr_IR_node->instruction = PUSH;
 			new_identifier_expr_IR_node->operand_type = IDENTIFIERS;
@@ -1739,7 +1721,8 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			break;
 			
 		case EXPRESSION_FUNCTIONCALL: ;
-			printf("in expression function call case.\n");
+			//printf("in expression function call case.\n");
+			//puts("1\n");
 			struct IR_node *new_expr_func_call_IR_node = generate_IR(dst->down); //first arg
 			
 			struct IR_node *last_node_expr_func_call = new_expr_func_call_IR_node;
@@ -1752,10 +1735,11 @@ struct IR_node *generate_IR(struct dst_node *dst){
 			last_node_expr_func_call->operand_type = IDENTIFIERS;
 			last_node_expr_func_call->p_code_operand.identifier = dst->name;
 			last_node_expr_func_call->args = dst->value;
+			//puts("2\n");
 			return new_expr_func_call_IR_node;
 		
-		case PARAMS:
-			printf("in param case.\n");
+		case PARAMS: ;
+			//printf("in param case.\n");
 			struct IR_node *new_param_IR_node = (struct IR_node *) malloc(sizeof(struct IR_node));
 			int args = dst->value;
 			new_param_IR_node->instruction = PUSH;

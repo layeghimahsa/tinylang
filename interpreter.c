@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "parser.tab.h"
 #include "parser.h"
 #include "interpreter.h"
@@ -13,13 +15,15 @@ void interpret(struct IR_node *IR)
 	while(IR_label_ptr != NULL )
 	{
 		IR_label_ptr->address = addr;
-		if(IR_label_ptr->label != (char *)0) //if we have assigned a label to IR instruction
+
+		if(IR_label_ptr->label != (char *)0 ) //if we have assigned a label to IR instruction
 		{
 			resolve_label(IR_label_ptr->label, addr, IR);
 		}
 		IR_label_ptr = IR_label_ptr->next;
 		addr++;
 	}
+
 
 	//set up environment
 	
@@ -214,12 +218,15 @@ void interpret(struct IR_node *IR)
 void resolve_label(char *l, int addr, struct IR_node *IR)
 {
 	struct IR_node *IR_label_ptr = IR;
+	printf("label : %s\n", l);
+	printf("addrr : %d\n", addr);
 	while(IR_label_ptr != NULL)
 	{
 		if((IR_label_ptr->instruction == JMP) || (IR_label_ptr->instruction == CALL) || (IR_label_ptr->instruction == BRCT) || (IR_label_ptr->instruction == BRCF) )
 		{
-			if(strcmp(IR_label_ptr->p_code_operand.identifier,l)==0)
+			if(strcmp(IR_label_ptr->p_code_operand.identifier,l)==0){
 				IR_label_ptr->p_code_operand.constant = addr; //we assign an address to each label. address is stored in p_code_operand constant. 
+			}
 		}
 		IR_label_ptr = IR_label_ptr->next;
 	}
@@ -302,25 +309,28 @@ char * to_string (struct IR_node *instruction){
 		strcat(str, "  ");
 	}
 		
-	char * inst = getInstructionName(instruction->instruction);
+	const char * instr_name;
+	enum p_code_inst inst = instruction->instruction;
 	
 	if(inst == PUSH || inst == POP  || inst == JMP || inst == BRCT || inst == BRCF || inst == CALL || inst == RET ){
-		strcat(str, inst);
+		instr_name = getInstructionName(inst);
+		strcat(str, instr_name);
 		strcat(str, "  ");
 		
 		if(instruction->operand_type == IDENTIFIERS){
 			strcat(str, instruction->p_code_operand.identifier);
 		} else if(instruction->operand_type == CONSTANT){
-			char *strint;
-			itoa(instruction->p_code_operand.constant,strint,10);
-			strcat(str, strint);
+			//char *strint;
+			//itoa(instruction->p_code_operand.constant,strint,10);
+			strcat(str, "number");
 		} else if(instruction->operand_type == REGISTER){
 			strcat(str, getRegisterName(instruction->p_code_operand.p_register));
 		} else {
 			strcat(str, "  ");
 		}
 	}else{
-		strcat(str, inst);
+		instr_name = getInstructionName(inst);
+		strcat(str, instr_name);
 		strcat(str, "  ");
 	}
 				

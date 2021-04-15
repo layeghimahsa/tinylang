@@ -7,12 +7,12 @@ digit [0-9]
 number [digit]+
 letter [a-zA-Z]
 %%
-"(" {printf(" LPAR "); return LPAR;}
-")" {printf(" RPAR "); return RPAR;}
-"," {printf(" COMMA ");return COMMA;}
-";" {printf(" SC "); return SC;}
-"=" {printf(" ASSIGNMENT "); return ASSIGNMENT;}
-"==" {printf(" == "); yylval.identifier_name = strdup(yytext);  return EQUAL;}
+"(" { return LPAR;}
+")" { return RPAR;}
+"," { return COMMA;}
+";" { return SC;}
+"=" { return ASSIGNMENT;}
+"==" { yylval.identifier_name = strdup(yytext);  return EQUAL;}
 "!=" {yylval.identifier_name = strdup(yytext); return INEQUAL;}
 ">" {yylval.identifier_name = strdup(yytext); return GREATER;}
 "<" {yylval.identifier_name = strdup(yytext); return LESS;}
@@ -26,16 +26,17 @@ letter [a-zA-Z]
 "*" {yylval.identifier_name = strdup(yytext); return MULTIPLICATION;}
 "/" {yylval.identifier_name = strdup(yytext); return DIVISION;}
 "return" {return RETURN;}
-"if" {printf(" IF "); return IF;}
+"if" {return IF;}
 "else" {return ELSE;}
-"func" {printf(" FUNC "); return FUNC;}
+"func" { return FUNC;}
 "msin" {return MAIN;}
-"arg"  { printf(" ARG "); return ARG;}
-"int" {printf(" INT "); return INT;}
+"arg"  {return ARG;}
+"int" {return INT;}
 "void" {return VOID;}
-([0-9]+) {yylval.value = atoi(yytext); printf(" NUMBER "); return NUMBER;}
-({letter}|_)({letter}|{digit}|_)* {yylval.identifier_name = strdup(yytext); printf(" IDENTIFIER "); return IDENTIFIER;}
+([0-9]+) {yylval.value = atoi(yytext); return NUMBER;}
+({letter}|_)({letter}|{digit}|_)* {yylval.identifier_name = strdup(yytext); return IDENTIFIER;}
 [ \t\n]+ ; //whitespace ignore
+"//".* { /* DO NOTHING */ }
 
 %%
 

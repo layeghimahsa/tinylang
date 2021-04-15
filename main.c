@@ -23,29 +23,36 @@ int main(int argc, char *argv[]){
 
 	
 	yyparse();
+	
+	puts("--------------------------------------------------------------------------------\n");
+	puts("                               Printing DST                                     \n");
+	puts("--------------------------------------------------------------------------------\n");
 	print_dst(dst);
 	
-	//printf("------------------------------------------------\n");
-	//printf("Now it comes to symtable\n");
-	//print_symboltable(symtable);
-
-	//printf("------------------------------------------------\n");
-	//printf("Now it comes to check_semantics\n");
 	
 	//semantic analysis to check validity of code
+	//puts("--------------------------------------------------------------------------------\n");
+	//puts("                             Check Semantics                                     \n");
+	//puts("--------------------------------------------------------------------------------\n");
 	
 	int errors = check_semantics(dst);
 	
 	if(errors > 0)
 	{
-		printf("%d errors found during semantic analysis.\n",errors);
+		//puts("--------------------------------------------------------------------------------\n");
+		//puts("                             ERROR FOUND!                                       \n");
+		//puts("--------------------------------------------------------------------------------\n");
+		printf("%d Erros found during semantic analysis.\n",errors);
 		return 0;
 	}
 	
+	puts("--------------------------------------------------------------------------------\n");
+	puts("                                Printing IR                                     \n");
+	puts("--------------------------------------------------------------------------------\n");
+	
+	
 	struct IR_node *IR = NULL;
 	IR = generate_IR(dst);
-	printf("------------------------------------------------\n");
-	printf("\nNow it comes to print IR generator\n");
 	print_IR(IR);
 	
 	//interpret(IR);
